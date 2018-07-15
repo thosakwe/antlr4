@@ -1,4 +1,4 @@
-import '';
+
 import '../parser.dart';
 import '../token.dart';
 import 'parse_tree.dart';
@@ -8,9 +8,9 @@ class Trees {
   /// Print out a whole tree in LISP form. [getNodeText] is used on the
   /// node payloads to get the text for the nodes. Detect parse trees and
   /// extract data appropriately.
-  static String toStringTree(Tree tree, [dynamic rules]) async {
+  static String toStringTree(Tree tree, [dynamic rules]) {
     if (rules is Parser) rules = rules.ruleNames;
-    String s = (await getNodeText(tree, rules)).replaceAll("\t", "\\t");
+    String s = ( getNodeText(tree, rules)).replaceAll("\t", "\\t");
     s = s.replaceAll("\n", "\\n");
     s = s.replaceAll("\r", "\\r");
     if (tree.childCount == 0) return s;
@@ -23,21 +23,21 @@ class Trees {
     return sb.toString();
   }
 
-  static String getNodeText(Tree tree, dynamic rules) async {
+  static String getNodeText(Tree tree, dynamic rules) {
     if (rules is Parser) rules = rules.ruleNames;
     if (rules != null) {
       if (tree is RuleNode) {
         return rules[tree.ruleContext.ruleIndex];
       } else if (tree is ErrorNode) {
-        return await tree.toStringAsync();
+        return  tree.toStringAsync();
       } else if (tree is TerminalNode) {
         Token symbol = tree.symbol;
-        if (symbol != null) return await symbol.getText();
+        if (symbol != null) return  symbol.getText();
       }
     }
     // no recog for rule names
     Object payload = tree.payload;
-    if (payload is Token) return await payload.getText();
+    if (payload is Token) return  payload.getText();
     return payload.toString();
   }
 

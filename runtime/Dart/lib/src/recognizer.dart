@@ -1,4 +1,4 @@
-import '';
+
 import 'dart:collection';
 import 'atn/atn.dart';
 import 'atn/atn_simulator.dart';
@@ -113,9 +113,9 @@ abstract class Recognizer<T, AtnInterpreter extends AtnSimulator> {
   /// about the token). This is better than forcing you to override a method in
   /// your token objects because you don't have to go modify your lexer
   /// so that it creates a new Dart type.
-  String getTokenErrorDisplay(Token token) async {
+  String getTokenErrorDisplay(Token token) {
     if (token == null) return "<no token>";
-    String s = await token.getText();
+    String s =  token.getText();
     if (s == null) {
       s = (token.type == Token.EOF) ? "<EOF>" : "<${token.type}>";
     }

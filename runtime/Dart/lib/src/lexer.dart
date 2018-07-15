@@ -1,4 +1,4 @@
-import '';
+
 import 'atn/atn_simulator.dart';
 import 'util/interval.dart';
 import 'util/pair.dart';
@@ -116,19 +116,19 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
 
   /// Return a list of all Token objects in input char source.
   /// Forces load of all tokens. Does not include EOF token.
-  List<Token> get allTokens async {
+  List<Token> get allTokens {
     List<Token> tokens = new List<Token>();
-    Token token = await nextToken();
+    Token token =  nextToken();
     while (token.type != Token.EOF) {
       tokens.add(token);
-      token = await nextToken();
+      token =  nextToken();
     }
     return tokens;
   }
 
-  Future reset() async {
+  Future reset() {
     // wack Lexer state variables
-    if (_input != null) await _input.seek(0); // rewind the input
+    if (_input != null)  _input.seek(0); // rewind the input
     token = null;
     type = Token.INVALID_TYPE;
     channel = Token.DEFAULT_CHANNEL;
@@ -143,13 +143,13 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
   }
 
   /// Return a token from this source; i.e., match a token on the input source.
-  Token nextToken() async {
+  Token nextToken() {
     if (_input == null) {
       throw new StateError("nextToken requires a non-null input source.");
     }
     // Mark start location in char source so unbuffered sources are
     // guaranteed at least have text of current token
-    int tokenStartMarker = await _input.mark;
+    int tokenStartMarker =  _input.mark;
     try {
       outer:
       while (true) {
@@ -167,7 +167,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
           type = Token.INVALID_TYPE;
           int ttype;
           try {
-            ttype = await interpreter.match(_input, mode);
+            ttype =  interpreter.match(_input, mode);
           } on LexerNoViableAltException catch (e) {
             notifyListeners(e); // report error
             recover(e);
@@ -183,7 +183,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
     } finally {
       // make sure we release marker after match or
       // unbuffered char source will keep buffering
-      await _input.release(tokenStartMarker);
+       _input.release(tokenStartMarker);
     }
   }
 
@@ -224,8 +224,8 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
   /// char buffer `start..stop`. If there is a text override in 'text',
   /// use that to set the token's text. Override this method to emit
   /// custom [Token] objects or provide a new factory.
-  Token emit() async {
-    Token token = await tokenFactory(
+  Token emit() {
+    Token token =  tokenFactory(
         _tokenFacSourcePair,
         type,
         _text,
@@ -238,7 +238,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
     return token;
   }
 
-  Token emitEof() async {
+  Token emitEof() {
     int pos = charPositionInLine;
     // The character position for EOF is one beyond the position of
     // the previous token's last character
@@ -246,7 +246,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
       int n = token.stopIndex - token.startIndex + 1;
       pos = token.charPositionInLine + n;
     }
-    Token eof = await tokenFactory(_tokenFacSourcePair, Token.EOF, null,
+    Token eof =  tokenFactory(_tokenFacSourcePair, Token.EOF, null,
         Token.DEFAULT_CHANNEL, _input.index, _input.index - 1, line, pos);
     emitToken(eof);
     return eof;
@@ -269,9 +269,9 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
     }
   }
 
-  Future notifyListeners(LexerNoViableAltException exception) async {
+  Future notifyListeners(LexerNoViableAltException exception) {
     String text =
-        await _input.getText(Interval.of(tokenStartCharIndex, _input.index));
+         _input.getText(Interval.of(tokenStartCharIndex, _input.index));
     String msg = "token recognition error at: '${getErrorDisplay(text)}'";
     errorListenerDispatch.syntaxError(this, null, tokenStartLine,
         tokenStartCharPositionInLine, msg, exception);

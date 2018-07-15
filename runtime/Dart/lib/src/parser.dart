@@ -1,4 +1,4 @@
-import '';
+
 import 'dart:collection';
 import 'package:bignum/bignum.dart';
 import 'package:meta/meta.dart';
@@ -190,13 +190,13 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
   /// A [RecognitionException] occurs when the current input symbol did not
   /// match [ttype] and the error strategy could not recover from the
   /// mismatched symbol.
-  Token match(int ttype) async {
-    Token token = await currentToken;
+  Token match(int ttype) {
+    Token token =  currentToken;
     if (token.type == ttype) {
       errorHandler.reportMatch(this);
       consume();
     } else {
-      token = await errorHandler.recoverInline(this);
+      token =  errorHandler.recoverInline(this);
       if (buildParseTree && token.tokenIndex == -1) {
         // we must have conjured up a new token during single token insertion
         // if it's not the current symbol
@@ -221,13 +221,13 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
   /// A [RecognitionException] occurs when the current input symbol did not
   /// match a wildcard and the error strategy could not recover from the
   /// mismatched symbol.
-  Token matchWildcard() async {
-    Token token = await currentToken;
+  Token matchWildcard() {
+    Token token =  currentToken;
     if (token.type > 0) {
       errorHandler.reportMatch(this);
       consume();
     } else {
-      token = await errorHandler.recoverInline(this);
+      token =  errorHandler.recoverInline(this);
       if (buildParseTree && token.tokenIndex == -1) {
         // we must have conjured up a new token during single token insertion
         // if it's not the current symbol
@@ -334,9 +334,9 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
   /// If the parser **is** in error recovery mode, the consumed symbol is
   /// added to the parse tree using [ParserRuleContext.addErrorNode],
   /// and [ParseTreeListener.visitErrorNode] is called on any parse listeners.
-  Token consume() async {
-    Token token = await currentToken;
-    if (token.type != Token.EOF) await inputStream.consume();
+  Token consume() {
+    Token token =  currentToken;
+    if (token.type != Token.EOF)  inputStream.consume();
     bool hasListener = _parseListeners != null && !_parseListeners.isEmpty;
     if (buildParseTree || hasListener) {
       if (errorHandler.inErrorRecoveryMode(this)) {
@@ -366,16 +366,16 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
 
   /// Always called by generated parsers upon entry to a rule. Access field
   /// [context] get the current context.
-  Future enterRule(ParserRuleContext localctx, int state, int ruleIndex) async {
+  Future enterRule(ParserRuleContext localctx, int state, int ruleIndex) {
     this.state = state;
     context = localctx;
-    context.start = await _input.lookToken(1);
+    context.start =  _input.lookToken(1);
     if (buildParseTree) addContextToParseTree();
     if (_parseListeners != null) _triggerEnterRuleEvent();
   }
 
-  Future exitRule() async {
-    context.stop = await _input.lookToken(-1);
+  Future exitRule() {
+    context.stop =  _input.lookToken(-1);
     // trigger event on context, before it reverts to parent
     if (_parseListeners != null) triggerExitRuleEvent();
     state = context.invokingState;
@@ -396,22 +396,22 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
   }
 
   Future enterRecursionRule(ParserRuleContext localctx, int state,
-      int ruleIndex, int precedence) async {
+      int ruleIndex, int precedence) {
     this.state = state;
     _precedenceStack.add(precedence);
     context = localctx;
-    context.start = await _input.lookToken(1);
+    context.start =  _input.lookToken(1);
     // simulates rule entry for left-recursive rules
     if (_parseListeners != null) _triggerEnterRuleEvent();
   }
 
   /// Like [enterRule] but for recursive rules.
   Future pushNewRecursionContext(
-      ParserRuleContext localctx, int state, int ruleIndex) async {
+      ParserRuleContext localctx, int state, int ruleIndex) {
     ParserRuleContext previous = context;
     previous.parent = localctx;
     previous.invokingState = state;
-    previous.stop = await _input.lookToken(-1);
+    previous.stop =  _input.lookToken(-1);
     context = localctx;
     context.start = previous.start;
     if (buildParseTree) context.addChild(previous);
@@ -419,9 +419,9 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
     if (_parseListeners != null) _triggerEnterRuleEvent();
   }
 
-  Future unrollRecursionContexts(ParserRuleContext parentctx) async {
+  Future unrollRecursionContexts(ParserRuleContext parentctx) {
     _precedenceStack.removeLast();
-    context.stop = await _input.lookToken(-1);
+    context.stop =  _input.lookToken(-1);
     ParserRuleContext retctx = context; // save current ctx (return value)
     // unroll so context is as it was before call to recursive method
     if (_parseListeners != null) {
@@ -545,9 +545,9 @@ class TraceListener implements ParseTreeListener {
 
   TraceListener(this._parser);
 
-  Future enterEveryRule(ParserRuleContext ctx) async {
+  Future enterEveryRule(ParserRuleContext ctx) {
     print("enter   ${_parser.ruleNames[ctx.ruleIndex]}, "
-        "lookToken(1)=${await (await _parser._input.lookToken(1)).getText()}");
+        "lookToken(1)=${ ( _parser._input.lookToken(1)).getText()}");
   }
 
   void visitTerminal(TerminalNode node) {
@@ -557,9 +557,9 @@ class TraceListener implements ParseTreeListener {
 
   void visitErrorNode(ErrorNode node) {}
 
-  Future exitEveryRule(ParserRuleContext ctx) async {
+  Future exitEveryRule(ParserRuleContext ctx) {
     print("exit    ${_parser.ruleNames[ctx.ruleIndex]}"
-        ", lookToken(1)=${await (await _parser._input.lookToken(1)).getText()}");
+        ", lookToken(1)=${ ( _parser._input.lookToken(1)).getText()}");
   }
 }
 

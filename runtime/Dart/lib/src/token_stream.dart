@@ -1,4 +1,4 @@
-import '';
+
 import 'util/interval.dart';
 import 'input_stream.dart';
 import 'token.dart';
@@ -138,11 +138,11 @@ class BufferedTokenStream implements TokenStream {
   String get sourceName => _tokenProvider.sourceName;
 
   /// Get the text of all tokens in this buffer.
-  String getAllText([Interval interval]) async {
+  String getAllText([Interval interval]) {
     _lazyInit();
-    await fill();
+     fill();
     // TODO: Find out if this interval should be ignored...
-    return await getText(Interval.of(0, length - 1));
+    return  getText(Interval.of(0, length - 1));
   }
 
   /// Reset this token source by setting its token source.
@@ -152,7 +152,7 @@ class BufferedTokenStream implements TokenStream {
     _index = -1;
   }
 
-  String getText(Interval interval) async {
+  String getText(Interval interval) {
     int start = interval.a;
     int stop = interval.b;
     if (start < 0 || stop < 0) return "";
@@ -162,7 +162,7 @@ class BufferedTokenStream implements TokenStream {
     for (int i = start; i <= stop; i++) {
       Token t = _tokens[i];
       if (t.type == Token.EOF) break;
-      sb.write(await t.getText());
+      sb.write( t.getText());
     }
     return sb.toString();
   }
@@ -179,11 +179,11 @@ class BufferedTokenStream implements TokenStream {
   }
 
   /// Get all tokens from lexer until EOF.
-  Future fill() async {
+  Future fill() {
     _lazyInit();
     int blockSize = 1000;
     while (true) {
-      int fetched = await _fetch(blockSize);
+      int fetched =  _fetch(blockSize);
       if (fetched < blockSize) return;
     }
   }
@@ -225,7 +225,7 @@ class BufferedTokenStream implements TokenStream {
     return new Future.value();
   }
 
-  Future consume() async {
+  Future consume() {
     bool skipEofCheck;
     if (_index >= 0) {
       if (_fetchedEof) {
@@ -243,7 +243,7 @@ class BufferedTokenStream implements TokenStream {
     if (!skipEofCheck && lookAhead(1) == Token.EOF) {
       throw new StateError("cannot consume EOF");
     }
-    if (await _sync(_index + 1)) {
+    if ( _sync(_index + 1)) {
       _index = adjustSeekIndex(_index + 1);
     }
   }
@@ -272,7 +272,7 @@ class BufferedTokenStream implements TokenStream {
 
   int lookAhead(int i) => lookToken(i).then((t) => t.type);
 
-  Token lookToken(int k) async {
+  Token lookToken(int k) {
     _lazyInit();
     if (k == 0) return null;
     if (k < 0) return _lookBack(-k);
@@ -338,11 +338,11 @@ class BufferedTokenStream implements TokenStream {
 
   // Make sure index i in _tokens has a token.
   // Return true if a token is located at index i, otherwise false.
-  bool _sync(int i) async {
+  bool _sync(int i) {
     assert(i >= 0);
     int n = i - _tokens.length + 1; // how many more elements we need?
     if (n > 0) {
-      int fetched = await _fetch(n);
+      int fetched =  _fetch(n);
       return fetched >= n;
     }
     return true;
@@ -350,10 +350,10 @@ class BufferedTokenStream implements TokenStream {
 
   // Add n elements to buffer.
   // Return the actual number of elements added to the buffer.
-  int _fetch(int n) async {
+  int _fetch(int n) {
     if (_fetchedEof) return 0;
     for (int i = 0; i < n; i++) {
-      Token token = await _tokenProvider.nextToken();
+      Token token =  _tokenProvider.nextToken();
       if (token is WritableToken) {
         token.tokenIndex = _tokens.length;
       }
@@ -448,9 +448,9 @@ class CommonTokenStream extends BufferedTokenStream {
       : super(tokenProvider);
 
   /// Count EOF just once.
-  int get numberOfOnChannelTokens async {
+  int get numberOfOnChannelTokens {
     int n = 0;
-    await fill();
+     fill();
     for (int i = 0; i < _tokens.length; i++) {
       Token t = _tokens[i];
       if (t.channel == _channel) n++;
@@ -463,7 +463,7 @@ class CommonTokenStream extends BufferedTokenStream {
     return _nextTokenOnChannel(i, _channel);
   }
 
-  Token lookToken(int k) async {
+  Token lookToken(int k) {
     _lazyInit();
     if (k == 0) return null;
     if (k < 0) return _lookBack(-k);
@@ -472,7 +472,7 @@ class CommonTokenStream extends BufferedTokenStream {
     // find k good tokens
     while (n < k) {
       // skip off-channel tokens, but make sure to not look past EOF
-      if (await _sync(i + 1)) {
+      if ( _sync(i + 1)) {
         i = _nextTokenOnChannel(i + 1, _channel);
       }
       n++;

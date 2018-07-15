@@ -1,5 +1,3 @@
-import '';
-import 'package:meta/meta.dart';
 import 'tree/parse_tree.dart';
 import 'tree/parse_tree_visitor.dart';
 import 'tree/trees.dart';
@@ -53,11 +51,11 @@ class RuleContext implements RuleNode {
   /// Since tokens on hidden channels (e.g. whitespace or comments) are not
   /// added to the parse trees, they will not appear in the output of this
   /// method.
-  String getText() async {
+  String getText() {
     if (childCount == 0) return "";
     StringBuffer sb = new StringBuffer();
     for (int i = 0; i < childCount; i++) {
-      sb.write(await getChild(i).getText());
+      sb.write(getChild(i).getText());
     }
     return sb.toString();
   }
@@ -78,8 +76,7 @@ class RuleContext implements RuleNode {
 
   ParseTree getChild(int i) => null;
 
-  dynamic accept(@checked ParseTreeVisitor visitor) =>
-      visitor.visitChildren(this);
+  T accept<T>(ParseTreeVisitor<T> visitor) => visitor.visitChildren(this);
 
   /// If [asTree] is `true`, return a whole string tree, not just a node,
   /// in LISP format (root `child1..childN`) or just a node when this is
@@ -218,7 +215,7 @@ class ParserRuleContext extends RuleContext {
     if (children == null || i < 0 || i >= children.length) return null;
     int pos = -1; // what element have we found with ctxType?
     for (ParseTree child in children) {
-      if (isInstanceOf(child)) {
+      if (isInstanceOf(child as RuleContext)) {
         pos++;
         if (pos == i) return child;
       }
@@ -266,7 +263,7 @@ class ParserRuleContext extends RuleContext {
     if (children == null) return [];
     List contexts = null;
     for (ParseTree child in children) {
-      if (isInstanceOf(child)) {
+      if (isInstanceOf(child as RuleContext)) {
         if (contexts == null) {
           contexts = new List();
         }

@@ -1,4 +1,4 @@
-import '';
+
 import 'dart:math';
 import 'util/interval.dart';
 import 'input_stream.dart';
@@ -51,7 +51,7 @@ class ANTLRByteArrayStream implements ANTLRInputStream {
     return new Future.value();
   }
 
-  int lookAhead(int i) async {
+  int lookAhead(int i) {
     if (i == 0) return 0; // undefined
     if (i < 0) {
       // e.g., translate lookAhead(-1) to use offset i = 0; then data[p - 1]

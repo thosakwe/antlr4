@@ -1,4 +1,4 @@
-import '';
+
 import 'util/interval.dart';
 import 'util/pair.dart';
 import 'input_stream.dart';
@@ -41,14 +41,14 @@ class CommonTokenFactory {
       int start,
       int stop,
       int line,
-      int charPositionInLine) async {
+      int charPositionInLine) {
     CommonToken t = new CommonToken(source, type, channel, start, stop);
     t.line = line;
     t.charPositionInLine = charPositionInLine;
     if (text != null) {
       t.text = text;
     } else if (_copyText && source.b != null) {
-      t.text = await source.b.getText(Interval.of(start, stop));
+      t.text =  source.b.getText(Interval.of(start, stop));
     }
     return t;
   }
@@ -223,10 +223,10 @@ class CommonToken implements WritableToken {
 
   ANTLRInputStream get inputStream => _source.b;
 
-  String toStringAsync() async {
+  String toStringAsync() {
     String channelStr = "";
     if (channel > 0) channelStr = ",channel=$channel";
-    String txt = await getText();
+    String txt =  getText();
     if (txt != null) {
       txt = txt.replaceAll("\n", "\\n");
       txt = txt.replaceAll("\r", "\\r");

@@ -34,7 +34,7 @@ class ANTLRAsyncStream implements ANTLRInputStream {
   }
 
   @override
-  Future consume() async {
+  Future consume() {
     _index++;
 
     if (_markers.isNotEmpty && _buf != null) {
@@ -45,10 +45,10 @@ class ANTLRAsyncStream implements ANTLRInputStream {
       }
     }
 
-    if (!await _queue.hasNext)
+    if (! _queue.hasNext)
       return Token.EOF;
 
-    var ch = _lastChar = await _queue.next;
+    var ch = _lastChar =  _queue.next;
 
     if (_markers.isNotEmpty) {
       if (_buf == null) {
@@ -66,7 +66,7 @@ class ANTLRAsyncStream implements ANTLRInputStream {
   }
 
   @override
-  int lookAhead(int i) async {
+  int lookAhead(int i) {
     if (_markers.isNotEmpty && _buf != null) {
       var m = _markers.first;
       var idx = _index + i - 1;
@@ -94,7 +94,7 @@ class ANTLRAsyncStream implements ANTLRInputStream {
 
       for (int j = 0; j < remaining; j++) {
         //print('Consuming $j');
-        await consume();
+         consume();
       }
 
       _index = cur;
@@ -105,14 +105,14 @@ class ANTLRAsyncStream implements ANTLRInputStream {
       throw new StateError(
           'To peek ahead more than 1 character from an ANTLRAsyncStream, use ANTLRAsyncStream.mark.');
 
-    if (!await _queue.hasNext)
+    if (! _queue.hasNext)
       return Token.EOF;
 
-    return await _queue.peek;
+    return  _queue.peek;
   }
 
   @override
-  Future seek(int index) async {
+  Future seek(int index) {
     if (_markers.isNotEmpty) {
       var m = _markers.first;
 
@@ -128,14 +128,14 @@ class ANTLRAsyncStream implements ANTLRInputStream {
       var diff = index - _index;
 
       for (int i = 0; i < diff; i++)
-        await consume();
+         consume();
     }
 
     if (_index > index)
       throw new StateError(
           'Cannot seek to index $index, as there is no buffer, and the current index is $_index.');
     else if (_index == index) return null;
-    return await _queue.skip(index - _index);
+    return  _queue.skip(index - _index);
   }
 
   @override
@@ -164,17 +164,17 @@ class ANTLRAsyncStream implements ANTLRInputStream {
   }
 
   @override
-  String getText(Interval interval) async {
-    var marker = await mark;
+  String getText(Interval interval) {
+    var marker =  mark;
     var buf = new StringBuffer();
-    await seek(interval.a);
+     seek(interval.a);
 
     for (int i = 0; i < interval.length; i++) {
-      buf.writeCharCode(await lookAhead(0));
-      await consume();
+      buf.writeCharCode( lookAhead(0));
+       consume();
     }
 
-    await release(marker);
+     release(marker);
     return buf.toString();
   }
 }

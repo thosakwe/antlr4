@@ -217,13 +217,13 @@ class ParserAtnSimulator extends AtnSimulator {
 
   void reset() {}
 
-  int adaptivePredict(TokenStream tokenStream, int decision,
-      ParserRuleContext outerContext) async {
+  int adaptivePredict(
+      TokenStream tokenStream, int decision, ParserRuleContext outerContext) {
     _input = tokenStream;
     _startIndex = tokenStream.index;
     _outerContext = outerContext;
     Dfa dfa = decisionToDfa[decision];
-    int m = await tokenStream.mark;
+    int m = tokenStream.mark;
     int index = _startIndex;
     try {
       DfaState s0;
@@ -265,12 +265,12 @@ class ParserAtnSimulator extends AtnSimulator {
         }
       }
       // We can start with an existing DFA
-      return await _execAtn(dfa, s0, tokenStream, index, outerContext);
+      return _execAtn(dfa, s0, tokenStream, index, outerContext);
     } finally {
       // wack cache after each prediction
       _mergeCache = null;
-      await tokenStream.seek(index);
-      await tokenStream.release(m);
+      tokenStream.seek(index);
+      tokenStream.release(m);
     }
   }
 
@@ -293,8 +293,8 @@ class ParserAtnSimulator extends AtnSimulator {
     return token.toString();
   }
 
-  String getLookaheadName(TokenStream TokenStream) async {
-    return getTokenName(await TokenStream.lookAhead(1));
+  String getLookaheadName(TokenStream TokenStream) {
+    return getTokenName(TokenStream.lookAhead(1));
   }
 
   void clearDfa() {
@@ -409,10 +409,10 @@ class ParserAtnSimulator extends AtnSimulator {
   //  * single alt + preds
   //  * conflict
   //  * conflict + preds
-  int _execAtn(Dfa dfa, DfaState s0, TokenStream tokenStream,
-      int startIndex, ParserRuleContext outerContext) async {
+  int _execAtn(Dfa dfa, DfaState s0, TokenStream tokenStream, int startIndex,
+      ParserRuleContext outerContext) {
     DfaState previousD = s0;
-    int token = await tokenStream.lookAhead(1);
+    int token = tokenStream.lookAhead(1);
     while (true) {
       DfaState state = _getExistingTargetState(previousD, token);
       if (state == null) state = _computeTargetState(dfa, previousD, token);
@@ -426,7 +426,7 @@ class ParserAtnSimulator extends AtnSimulator {
         // ATN states in SLL implies LL will also get nowhere.
         // If conflict in states that dip out, choose min since we
         // will get error no matter what.
-        NoViableAltException e = await _noViableAlt(
+        NoViableAltException e = _noViableAlt(
             tokenStream, outerContext, previousD.configs, startIndex);
         tokenStream.seek(startIndex);
         int alt = _getSynValidOrSemInvalidAlt(previousD.configs, outerContext);
@@ -454,7 +454,7 @@ class ParserAtnSimulator extends AtnSimulator {
             _computeStartState(dfa.atnStartState, outerContext, fullCtx);
         _reportAttemptingFullContext(
             dfa, conflictingAlts, state.configs, startIndex, tokenStream.index);
-        int alt = await _execAtnWithFullContext(
+        int alt = _execAtnWithFullContext(
             dfa, state, s0Closure, tokenStream, startIndex, outerContext);
         return alt;
       }
@@ -483,7 +483,7 @@ class ParserAtnSimulator extends AtnSimulator {
       previousD = state;
       if (token != Token.EOF) {
         tokenStream.consume();
-        token = await tokenStream.lookAhead(1);
+        token = tokenStream.lookAhead(1);
       }
     }
   }
@@ -580,13 +580,13 @@ class ParserAtnSimulator extends AtnSimulator {
       AtnConfigSet s0,
       TokenStream input,
       int startIndex,
-      ParserRuleContext outerContext) async {
+      ParserRuleContext outerContext) {
     bool fullCtx = true;
     bool foundExactAmbig = false;
     AtnConfigSet reach = null;
     AtnConfigSet previous = s0;
     input.seek(startIndex);
-    int token = await input.lookAhead(1);
+    int token = input.lookAhead(1);
     int predictedAlt;
     while (true) {
       // while more work
@@ -633,7 +633,7 @@ class ParserAtnSimulator extends AtnSimulator {
       previous = reach;
       if (token != Token.EOF) {
         input.consume();
-        token = await input.lookAhead(1);
+        token = input.lookAhead(1);
       }
     }
     // If the configuration set uniquely predicts an alternative,
@@ -1241,15 +1241,12 @@ class ParserAtnSimulator extends AtnSimulator {
     return conflictingAlts;
   }
 
-  NoViableAltException _noViableAlt(
-      TokenStream input,
-      ParserRuleContext outerContext,
-      AtnConfigSet configs,
-      int startIndex) async {
+  NoViableAltException _noViableAlt(TokenStream input,
+      ParserRuleContext outerContext, AtnConfigSet configs, int startIndex) {
     return new NoViableAltException(parser,
         inputStream: input,
         startToken: input.get(startIndex),
-        offendingToken: await input.lookToken(1),
+        offendingToken: input.lookToken(1),
         context: outerContext,
         deadEndConfigs: configs);
   }
@@ -1382,10 +1379,10 @@ class LexerAtnSimulator extends AtnSimulator {
     _startIndex = simulator._startIndex;
   }
 
-  int match(ANTLRInputStream input, int mode) async {
+  int match(ANTLRInputStream input, int mode) {
     match_calls++;
     _mode = mode;
-    int mark = await input.mark;
+    int mark = input.mark;
     try {
       _startIndex = input.index;
       _prevAccept._reset();
@@ -1393,10 +1390,10 @@ class LexerAtnSimulator extends AtnSimulator {
       if (dfa.s0 == null) {
         return _matchAtn(input);
       } else {
-        return await _execAtn(input, dfa.s0);
+        return _execAtn(input, dfa.s0);
       }
     } finally {
-      await input.release(mark);
+      input.release(mark);
     }
   }
 
@@ -1422,8 +1419,8 @@ class LexerAtnSimulator extends AtnSimulator {
     return input.getText(Interval.of(_startIndex, input.index - 1));
   }
 
-  Future consume(ANTLRInputStream input) async {
-    int curChar = await input.lookAhead(1);
+  void consume(ANTLRInputStream input) {
+    int curChar = input.lookAhead(1);
     if (curChar == '\n'.codeUnitAt(0)) {
       line++;
       charPositionInLine = 0;
@@ -1448,8 +1445,8 @@ class LexerAtnSimulator extends AtnSimulator {
     return _execAtn(input, next);
   }
 
-  int _execAtn(ANTLRInputStream input, DfaState ds0) async {
-    int token = await input.lookAhead(1);
+  int _execAtn(ANTLRInputStream input, DfaState ds0) {
+    int token = input.lookAhead(1);
     DfaState state = ds0; // s is current/from DFA state
     while (true) {
       // while more work
@@ -1481,7 +1478,7 @@ class LexerAtnSimulator extends AtnSimulator {
       }
       if (token != Token.EOF) {
         consume(input);
-        token = await input.lookAhead(1);
+        token = input.lookAhead(1);
       }
       state = target; // flip; current DFA target becomes new src/from state
     }
@@ -1550,8 +1547,8 @@ class LexerAtnSimulator extends AtnSimulator {
   // Given a starting configuration set, figure out all ATN configurations
   // we can reach upon input token. Parameter reach is a return
   // parameter.
-  Future _getReachableConfigSet(ANTLRInputStream input, AtnConfigSet closure,
-      AtnConfigSet reach, int token) async {
+  void _getReachableConfigSet(ANTLRInputStream input, AtnConfigSet closure,
+      AtnConfigSet reach, int token) {
     // this is used to skip processing for configs which have a lower priority
     // than a config that already reached an accept state for the same rule
     int skipAlt = Atn.INVALID_ALT_NUMBER;
@@ -1571,7 +1568,7 @@ class LexerAtnSimulator extends AtnSimulator {
             executor = executor.fixOffsetBeforeMatch(input.index - _startIndex);
           }
           bool treatEofAsEpsilon = token == Token.EOF;
-          if (await _closure(
+          if (_closure(
               input,
               new LexerAtnConfig.from(c as LexerAtnConfig, target,
                   actionExecutor: executor),
@@ -1632,7 +1629,7 @@ class LexerAtnSimulator extends AtnSimulator {
       AtnConfigSet configs,
       bool currentAltReachedAcceptState,
       bool speculative,
-      bool treatEofAsEpsilon) async {
+      bool treatEofAsEpsilon) {
     if (config.state is RuleStopState) {
       if (config.context == null || config.context.hasEmptyPath) {
         if (config.context == null || config.context.isEmpty) {
@@ -1652,7 +1649,7 @@ class LexerAtnSimulator extends AtnSimulator {
             AtnState returnState = atn.states[config.context.returnStateFor(i)];
             LexerAtnConfig c = new LexerAtnConfig.from(config, returnState,
                 context: newContext);
-            currentAltReachedAcceptState = await _closure(input, c, configs,
+            currentAltReachedAcceptState = _closure(input, c, configs,
                 currentAltReachedAcceptState, speculative, treatEofAsEpsilon);
           }
         }
@@ -1669,10 +1666,10 @@ class LexerAtnSimulator extends AtnSimulator {
     AtnState p = config.state;
     for (int i = 0; i < p.numberOfTransitions; i++) {
       Transition t = p.getTransition(i);
-      LexerAtnConfig c = await _getEpsilonTarget(
+      LexerAtnConfig c = _getEpsilonTarget(
           input, config, t, configs, speculative, treatEofAsEpsilon);
       if (c != null) {
-        currentAltReachedAcceptState = await _closure(input, c, configs,
+        currentAltReachedAcceptState = _closure(input, c, configs,
             currentAltReachedAcceptState, speculative, treatEofAsEpsilon);
       }
     }
@@ -1686,7 +1683,7 @@ class LexerAtnSimulator extends AtnSimulator {
       Transition transition,
       AtnConfigSet configs,
       bool speculative,
-      bool treatEofAsEpsilon) async {
+      bool treatEofAsEpsilon) {
     LexerAtnConfig c = null;
     switch (transition.serializationType) {
       case Transition.RULE:
@@ -1718,7 +1715,7 @@ class LexerAtnSimulator extends AtnSimulator {
         // test them, we cannot cash the DFA state target of ID.
         PredicateTransition pt = transition;
         configs.hasSemanticContext = true;
-        if (await _evaluatePredicate(
+        if (_evaluatePredicate(
             input, pt.ruleIndex, pt.predIndex, speculative)) {
           c = new LexerAtnConfig.from(config, transition.target);
         }
@@ -1770,8 +1767,8 @@ class LexerAtnSimulator extends AtnSimulator {
   // one character before the predicate's location.
   //
   // Return true if the specified predicate evaluates to true.
-  bool _evaluatePredicate(ANTLRInputStream input, int ruleIndex,
-      int predIndex, bool speculative) async {
+  bool _evaluatePredicate(
+      ANTLRInputStream input, int ruleIndex, int predIndex, bool speculative) {
     // assume true if no recognizer was provided
     if (_recog == null) return true;
     if (!speculative)
@@ -1779,7 +1776,7 @@ class LexerAtnSimulator extends AtnSimulator {
     int savedCharPositionInLine = charPositionInLine;
     int savedLine = line;
     int index = input.index;
-    int marker = await input.mark;
+    int marker = input.mark;
     try {
       consume(input);
       return _recog.semanticPredicate(null, ruleIndex, predIndex);

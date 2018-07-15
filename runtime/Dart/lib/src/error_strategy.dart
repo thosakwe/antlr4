@@ -1,4 +1,3 @@
-import '';
 import 'atn/atn.dart';
 import 'atn/atn_states.dart';
 import 'atn/transitions.dart';
@@ -218,12 +217,12 @@ class DefaultErrorStrategy implements ErrorStrategy {
   /// compare token set at the start of the loop and at each iteration. If for
   /// some reason speed is suffering for you, you can turn off this
   /// functionality by simply overriding this method as a blank { }.
-  Future sync(Parser recognizer) async {
+  void sync(Parser recognizer) {
     AtnState state = recognizer.interpreter.atn.states[recognizer.state];
     // If already recovering, don't try to sync
     if (inErrorRecoveryMode(recognizer)) return;
     TokenStream tokens = recognizer.inputStream;
-    int la = await tokens.lookAhead(1);
+    int la =  tokens.lookAhead(1);
     // try cheaper subset first; might get lucky. seems to shave a wee bit off
     if (recognizer.atn.nextTokensInSameRule(state).contains(la) ||
         la == Token.EOF) return;
@@ -237,7 +236,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
         // report error and recover if possible
         if (_singleTokenDeletion(recognizer) != null) return;
         throw new InputMismatchException(
-            recognizer, await recognizer.currentToken);
+            recognizer,  recognizer.currentToken);
       case AtnState.PLUS_LOOP_BACK:
       case AtnState.STAR_LOOP_BACK:
         _reportUnwantedToken(recognizer);
@@ -288,9 +287,9 @@ class DefaultErrorStrategy implements ErrorStrategy {
   /// call [recoverInline]. To recover, it sees that `lookAhea(1)==';'`
   /// is in the set of tokens that can follow the `')'` token reference
   /// in rule `atom`. It can assume that you forgot the `')'`.
-  Token recoverInline(Parser recognizer) async {
+  Token recoverInline(Parser recognizer) {
     // SINGLE TOKEN DELETION
-    Token matchedSymbol = await _singleTokenDeletion(recognizer);
+    Token matchedSymbol =  _singleTokenDeletion(recognizer);
     if (matchedSymbol != null) {
       // we have deleted the extra token.
       // now, move past ttype token as if all were ok
@@ -298,10 +297,10 @@ class DefaultErrorStrategy implements ErrorStrategy {
       return matchedSymbol;
     }
     // SINGLE TOKEN INSERTION
-    if (await _singleTokenInsertion(recognizer))
+    if ( _singleTokenInsertion(recognizer))
       return _getMissingSymbol(recognizer);
     // even that didn't work; must throw the exception
-    throw new InputMismatchException(recognizer, await recognizer.currentToken);
+    throw new InputMismatchException(recognizer,  recognizer.currentToken);
   }
 
   // This method is called to leave error recovery mode after recovering from
@@ -313,15 +312,15 @@ class DefaultErrorStrategy implements ErrorStrategy {
   }
 
   // This is called by reportError when the exception is a NoViableAltException.
-  Future _reportNoViableAlternative(
-      Parser recognizer, NoViableAltException e) async {
+  void _reportNoViableAlternative(
+      Parser recognizer, NoViableAltException e) {
     TokenStream tokens = recognizer.inputStream;
     String input;
     if (tokens is TokenStream) {
       if (e.startToken.type == Token.EOF)
         input = "<EOF>";
       else
-        input = await tokens.getTextBetween(e.startToken, e.offendingToken);
+        input =  tokens.getTextBetween(e.startToken, e.offendingToken);
     } else {
       input = "<unknown input>";
     }
@@ -356,11 +355,11 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // The default implementation simply returns if the handler is already in
   // error recovery mode. Otherwise, it calls beginErrorCondition to
   // enter error recovery mode, followed by calling Parser.notifyErrorListeners.
-  Future _reportUnwantedToken(Parser recognizer) async {
+  void _reportUnwantedToken(Parser recognizer) {
     if (inErrorRecoveryMode(recognizer)) return;
     beginErrorCondition(recognizer);
-    Token token = await recognizer.currentToken;
-    String tokenName = await _getTokenErrorDisplay(token);
+    Token token =  recognizer.currentToken;
+    String tokenName =  _getTokenErrorDisplay(token);
     IntervalSet expecting = getExpectedTokens(recognizer);
     String msg = "extraneous input $tokenName expecting "
         "${expecting.toTokenString(recognizer.tokenNames)}";
@@ -379,10 +378,10 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // The default implementation simply returns if the handler is already in
   // error recovery mode. Otherwise, it calls beginErrorCondition to
   // enter error recovery mode, followed by calling Parser.notifyErrorListeners.
-  Future _reportMissingToken(Parser recognizer) async {
+  void _reportMissingToken(Parser recognizer) {
     if (inErrorRecoveryMode(recognizer)) return;
     beginErrorCondition(recognizer);
-    Token t = await recognizer.currentToken;
+    Token t =  recognizer.currentToken;
     IntervalSet expecting = getExpectedTokens(recognizer);
     String msg = "missing ${expecting.toTokenString(
         recognizer.tokenNames)} at ${_getTokenErrorDisplay(t)}";
@@ -404,8 +403,8 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // recognizer is the parser instance
   // Return true if single-token insertion is a viable recovery
   // strategy for the current mismatched input, otherwise false.
-  bool _singleTokenInsertion(Parser recognizer) async {
-    int currentSymbolType = await recognizer.inputStream.lookAhead(1);
+  bool _singleTokenInsertion(Parser recognizer) {
+    int currentSymbolType =  recognizer.inputStream.lookAhead(1);
     // if current token is consistent with what could come after current
     // ATN state, then we know we're missing a token; error recovery
     // is free to conjure up and insert the missing token
@@ -436,14 +435,14 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // recognizer is the parser instance
   // Return the successfully matched Token instance if single-token
   // deletion successfully recovers from the mismatched input, otherwise null.
-  Token _singleTokenDeletion(Parser recognizer) async {
-    int nextTokenType = await recognizer.inputStream.lookAhead(2);
+  Token _singleTokenDeletion(Parser recognizer) {
+    int nextTokenType =  recognizer.inputStream.lookAhead(2);
     IntervalSet expecting = getExpectedTokens(recognizer);
     if (expecting.contains(nextTokenType)) {
       _reportUnwantedToken(recognizer);
       recognizer.consume(); // simply delete extra token
       // we want to return the token we're actually matching
-      Token matchedSymbol = await recognizer.currentToken;
+      Token matchedSymbol =  recognizer.currentToken;
       reportMatch(recognizer); // we know current token is correct
       return matchedSymbol;
     }
@@ -468,8 +467,8 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // a CommonToken of the appropriate type. The text will be the token.
   // If you change what tokens must be created by the lexer,
   // override this method to create the appropriate tokens.
-  Token _getMissingSymbol(Parser recognizer) async {
-    Token currentSymbol = await recognizer.currentToken;
+  Token _getMissingSymbol(Parser recognizer) {
+    Token currentSymbol =  recognizer.currentToken;
     IntervalSet expecting = getExpectedTokens(recognizer);
     int expectedTokenType = expecting.minElement; // get any element
     String tokenText;
@@ -478,11 +477,11 @@ class DefaultErrorStrategy implements ErrorStrategy {
     else
       tokenText = "<missing ${recognizer.tokenNames[expectedTokenType]}>";
     Token current = currentSymbol;
-    Token lookback = await recognizer.inputStream.lookToken(-1);
+    Token lookback =  recognizer.inputStream.lookToken(-1);
     if (current.type == Token.EOF && lookback != null) {
       current = lookback;
     }
-    return await recognizer.tokenFactory(
+    return  recognizer.tokenFactory(
         new Pair<TokenProvider, ANTLRInputStream>(
             current.tokenProvider, current.tokenProvider.inputStream),
         expectedTokenType,
@@ -501,9 +500,9 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // the token). This is better than forcing you to override a method in
   // your token objects because you don't have to go modify your lexer
   // so that it creates a new Java type.
-  String _getTokenErrorDisplay(Token t) async {
+  String _getTokenErrorDisplay(Token t) {
     if (t == null) return "<no token>";
-    String s = await t.getText();
+    String s =  t.getText();
     if (s == null) {
       if (t.type == Token.EOF) {
         s = "<EOF>";
@@ -628,11 +627,11 @@ class DefaultErrorStrategy implements ErrorStrategy {
   }
 
   // Consume tokens until one matches the given token set.
-  Future _consumeUntil(Parser recognizer, IntervalSet set) async {
-    int ttype = await recognizer.inputStream.lookAhead(1);
+  void _consumeUntil(Parser recognizer, IntervalSet set) {
+    int ttype =  recognizer.inputStream.lookAhead(1);
     while (ttype != Token.EOF && !set.contains(ttype)) {
-      await recognizer.consume();
-      ttype = await recognizer.inputStream.lookAhead(1);
+       recognizer.consume();
+      ttype =  recognizer.inputStream.lookAhead(1);
     }
   }
 }

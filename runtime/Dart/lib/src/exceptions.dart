@@ -1,4 +1,4 @@
-import '';
+
 import 'atn/atn_config_set.dart';
 import 'atn/atn_states.dart';
 import 'atn/transitions.dart';
@@ -162,11 +162,11 @@ class LexerNoViableAltException extends RecognitionException {
       Lexer lexer, ANTLRInputStream input, this.startIndex, this.deadEndConfigs)
       : super(lexer, input, null);
 
-  String toStringAsync() async {
+  String toStringAsync() {
     String symbol = "";
     if (startIndex >= 0 && startIndex < inputStream.length) {
       var interval = Interval.of(startIndex, startIndex);
-      symbol = await inputStream.getText(interval);
+      symbol =  inputStream.getText(interval);
       symbol = symbol.replaceAll('\t', "\\t");
       symbol = symbol.replaceAll('\n', "\\n");
       symbol = symbol.replaceAll('\r', "\\r");

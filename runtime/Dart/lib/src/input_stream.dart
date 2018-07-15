@@ -1,4 +1,4 @@
-import '';
+
 import 'util/interval.dart';
 
 /// A simple source of symbols whose values are represented as integers. This

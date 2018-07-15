@@ -1,4 +1,4 @@
-import '';
+
 import 'package:meta/meta.dart';
 import 'atn/atn.dart';
 import 'atn/atn_simulator.dart';
@@ -90,15 +90,15 @@ class ParserInterpreter extends Parser {
   }
 
   /// Begin parsing at [startRuleIndex].
-  ParserRuleContext parse(int startRuleIndex) async {
+  ParserRuleContext parse(int startRuleIndex) {
     RuleStartState startRuleStartState = atn.ruleToStartState[startRuleIndex];
     var rootContext = new InterpreterRuleContext(
         null, AtnState.INVALID_STATE_NUMBER, startRuleIndex);
     if (startRuleStartState.isPrecedenceRule) {
-      await enterRecursionRule(
+       enterRecursionRule(
           rootContext, startRuleStartState.stateNumber, startRuleIndex, 0);
     } else {
-      await enterRule(
+       enterRule(
           rootContext, startRuleStartState.stateNumber, startRuleIndex);
     }
     while (true) {
@@ -110,17 +110,17 @@ class ParserInterpreter extends Parser {
             if (startRuleStartState.isPrecedenceRule) {
               ParserRuleContext result = context;
               var parentContext = parentContextStack.removeLast();
-              await unrollRecursionContexts(parentContext.a);
+               unrollRecursionContexts(parentContext.a);
               return result;
             } else {
-              await exitRule();
+               exitRule();
               return rootContext;
             }
           }
-          await _visitRuleStopState(p);
+           _visitRuleStopState(p);
           break;
         default:
-          await _visitState(p);
+           _visitState(p);
           break;
       }
     }
@@ -135,10 +135,10 @@ class ParserInterpreter extends Parser {
 
   AtnState _getAtnState() => atn.states[state];
 
-  Future _visitState(AtnState antState) async {
+  Future _visitState(AtnState antState) {
     int edge;
     if (antState.numberOfTransitions > 1) {
-      edge = await interpreter.adaptivePredict(
+      edge =  interpreter.adaptivePredict(
           inputStream, (antState as DecisionState).decision, context);
     } else {
       edge = 1;
@@ -150,7 +150,7 @@ class ParserInterpreter extends Parser {
             (transition.target is! LoopEndState)) {
           var ctx = new InterpreterRuleContext(parentContextStack.last.a,
               parentContextStack.last.b, context.ruleIndex);
-          await pushNewRecursionContext(
+           pushNewRecursionContext(
               ctx,
               atn.ruleToStartState[antState.ruleIndex].stateNumber,
               context.ruleIndex);
@@ -163,7 +163,7 @@ class ParserInterpreter extends Parser {
       case Transition.SET:
       case Transition.NOT_SET:
         if (!transition.matches(
-            await inputStream.lookAhead(1), Token.MIN_USER_TOKEN_TYPE, 65535)) {
+             inputStream.lookAhead(1), Token.MIN_USER_TOKEN_TYPE, 65535)) {
           errorHandler.recoverInline(this);
         }
         matchWildcard();
@@ -177,17 +177,17 @@ class ParserInterpreter extends Parser {
         var ctx = new InterpreterRuleContext(
             context, antState.stateNumber, ruleIndex);
         if (ruleStartState.isPrecedenceRule) {
-          await enterRecursionRule(ctx, ruleStartState.stateNumber, ruleIndex,
+           enterRecursionRule(ctx, ruleStartState.stateNumber, ruleIndex,
               (transition as RuleTransition).precedence);
         } else {
-          await enterRule(ctx, transition.target.stateNumber, ruleIndex);
+           enterRule(ctx, transition.target.stateNumber, ruleIndex);
         }
         break;
       case Transition.PREDICATE:
         PredicateTransition predicateTransition = transition;
         if (!semanticPredicate(context, predicateTransition.ruleIndex,
             predicateTransition.predIndex)) {
-          throw new FailedPredicateException(this, await currentToken);
+          throw new FailedPredicateException(this,  currentToken);
         }
         break;
       case Transition.ACTION:
@@ -199,7 +199,7 @@ class ParserInterpreter extends Parser {
         var pred = (transition as RuleTransition).precedence;
         if (!precedencePredicate(context, pred)) {
           throw new FailedPredicateException(
-              this, await currentToken, "precpred(context, $pred)");
+              this,  currentToken, "precpred(context, $pred)");
         }
         break;
       default:
@@ -208,14 +208,14 @@ class ParserInterpreter extends Parser {
     state = transition.target.stateNumber;
   }
 
-  Future _visitRuleStopState(AtnState p) async {
+  Future _visitRuleStopState(AtnState p) {
     RuleStartState ruleStartState = atn.ruleToStartState[p.ruleIndex];
     if (ruleStartState.isPrecedenceRule) {
       var parentContext = parentContextStack.removeLast();
-      await unrollRecursionContexts(parentContext.a);
+       unrollRecursionContexts(parentContext.a);
       state = parentContext.b;
     } else {
-      await exitRule();
+       exitRule();
     }
     RuleTransition ruleTransition = atn.states[state].getTransition(0);
     state = ruleTransition.followState.stateNumber;

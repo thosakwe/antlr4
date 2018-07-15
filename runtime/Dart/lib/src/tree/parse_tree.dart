@@ -1,17 +1,16 @@
-import '';
 import '../util/interval.dart';
 import '../contexts.dart';
 import '../token.dart';
 import 'parse_tree_visitor.dart';
 
-abstract class ParseTreeListener {
-  FutureOr visitTerminal(TerminalNode terminalNode);
+abstract class ParseTreeListener<T> {
+  T visitTerminal(TerminalNode terminalNode);
 
-  FutureOr visitErrorNode(ErrorNode errorNode);
+  T visitErrorNode(ErrorNode errorNode);
 
-  FutureOr enterEveryRule(ParserRuleContext context);
+  T enterEveryRule(ParserRuleContext context);
 
-  FutureOr exitEveryRule(ParserRuleContext context);
+  T exitEveryRule(ParserRuleContext context);
 }
 
 /// The basic notion of a tree has a parent, a payload, and a list of children.
@@ -98,9 +97,8 @@ class TerminalNode implements ParseTree {
 
   T accept<T>(ParseTreeVisitor<T> visitor) => visitor.visitTerminal(this);
 
-  String toStringAsync() => (symbol.type == Token.EOF)
-      ? "<EOF>"
-      : symbol.getText();
+  String toStringAsync() =>
+      (symbol.type == Token.EOF) ? "<EOF>" : symbol.getText();
 
   /// Use [toStringAsync] instead.
   @deprecated
