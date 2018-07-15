@@ -674,8 +674,8 @@ void <if(method.isEnter)>enter<else>exit<endif>Rule(ParseTreeListener listener) 
 >>
 
 VisitorDispatchMethod(method) ::= <<
-dynamic accept(ParseTreeVisitor visitor) {
-  if (visitor is <parser.grammarName>Visitor) return visitor.visit<struct.derivedFromName; format="cap">(this);
+T accept<T>(ParseTreeVisitor<T> visitor) {
+  if (visitor is <parser.grammarName>Visitor<T>) return visitor.visit<struct.derivedFromName; format="cap">(this);
   else return visitor.visitChildren(this);
 }
 >>
