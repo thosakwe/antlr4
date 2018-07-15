@@ -64,7 +64,7 @@ abstract class SyntaxTree extends Tree {
 /// The payload is either a [Token] or a [RuleContext] object.
 abstract class ParseTree extends SyntaxTree {
   /// The [ParseTreeVisitor] needs a double dispatch method.
-  dynamic accept(ParseTreeVisitor visitor);
+  T accept<T>(ParseTreeVisitor<T> visitor);
 
   /// Return the combined text of all leaf nodes. Does not get any
   /// off-channel tokens (if any) so won't return whitespace and
