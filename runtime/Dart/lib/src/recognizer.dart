@@ -113,7 +113,7 @@ abstract class Recognizer<T, AtnInterpreter extends AtnSimulator> {
   /// about the token). This is better than forcing you to override a method in
   /// your token objects because you don't have to go modify your lexer
   /// so that it creates a new Dart type.
-  Future<String> getTokenErrorDisplay(Token token) async {
+  String getTokenErrorDisplay(Token token) async {
     if (token == null) return "<no token>";
     String s = await token.getText();
     if (s == null) {

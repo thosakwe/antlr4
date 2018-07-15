@@ -17,14 +17,14 @@ abstract class TokenStream extends ANTLRInputStream {
   ///
   ///      TokenSource source = ...;
   ///      String text = source.getTextIn(new Interval(0, source.length));
-  Future<String> getAllText([Interval interval]);
+  String getAllText([Interval interval]);
 
   /// Get the [Token] instance associated with the value returned by
   /// `lookAhead(k)`. This method has the same pre- and post-conditions as
   /// [InputSource.lookAhead]. In addition, when the preconditions of this
   /// method are met, the return value is non-null and the value of
   /// `lookToken(k).type == lookAhead(k)`.
-  Future<Token> lookToken(int k);
+  Token lookToken(int k);
 
   /// Gets the [Token] at the specified `index` in the source. When
   /// the preconditions of this method are met, the return value is non-null.
@@ -63,7 +63,7 @@ abstract class TokenStream extends ANTLRInputStream {
   /// source.
   ///
   /// An [NullThrownError] occurs when [interval] is `null`.
-  Future<String> getText(Interval interval);
+  String getText(Interval interval);
 
   /// Return the text of all tokens in this source between [start] and
   /// [stop] [Token] (inclusive).
@@ -91,7 +91,7 @@ abstract class TokenStream extends ANTLRInputStream {
   ///
   /// An [UnsupportedError] occurs when this source does not support this
   /// method for the specified tokens.
-  Future<String> getTextBetween(Token start, Token stop);
+  String getTextBetween(Token start, Token stop);
 }
 
 /// Buffer all input tokens but do on-demand fetching of new tokens from lexer.
@@ -129,7 +129,7 @@ class BufferedTokenStream implements TokenStream {
 
   int get index => _index;
 
-  Future<int> get mark => new Future<int>.value(0);
+  int get mark => 0;
 
   int get length => _tokens.length;
 
@@ -138,7 +138,7 @@ class BufferedTokenStream implements TokenStream {
   String get sourceName => _tokenProvider.sourceName;
 
   /// Get the text of all tokens in this buffer.
-  Future<String> getAllText([Interval interval]) async {
+  String getAllText([Interval interval]) async {
     _lazyInit();
     await fill();
     // TODO: Find out if this interval should be ignored...
@@ -152,7 +152,7 @@ class BufferedTokenStream implements TokenStream {
     _index = -1;
   }
 
-  Future<String> getText(Interval interval) async {
+  String getText(Interval interval) async {
     int start = interval.a;
     int stop = interval.b;
     if (start < 0 || stop < 0) return "";
@@ -167,10 +167,10 @@ class BufferedTokenStream implements TokenStream {
     return sb.toString();
   }
 
-  Future<String> getTextBetween(Token start, Token stop) {
+  String getTextBetween(Token start, Token stop) {
     return (start != null && stop != null)
         ? getText(Interval.of(start.tokenIndex, stop.tokenIndex))
-        : new Future<String>.value("");
+        : "";
   }
 
   @override
@@ -270,9 +270,9 @@ class BufferedTokenStream implements TokenStream {
     return subset;
   }
 
-  Future<int> lookAhead(int i) => lookToken(i).then((t) => t.type);
+  int lookAhead(int i) => lookToken(i).then((t) => t.type);
 
-  Future<Token> lookToken(int k) async {
+  Token lookToken(int k) async {
     _lazyInit();
     if (k == 0) return null;
     if (k < 0) return _lookBack(-k);
@@ -338,7 +338,7 @@ class BufferedTokenStream implements TokenStream {
 
   // Make sure index i in _tokens has a token.
   // Return true if a token is located at index i, otherwise false.
-  Future<bool> _sync(int i) async {
+  bool _sync(int i) async {
     assert(i >= 0);
     int n = i - _tokens.length + 1; // how many more elements we need?
     if (n > 0) {
@@ -350,8 +350,8 @@ class BufferedTokenStream implements TokenStream {
 
   // Add n elements to buffer.
   // Return the actual number of elements added to the buffer.
-  Future<int> _fetch(int n) async {
-    if (_fetchedEof) return new Future<int>.value(0);
+  int _fetch(int n) async {
+    if (_fetchedEof) return 0;
     for (int i = 0; i < n; i++) {
       Token token = await _tokenProvider.nextToken();
       if (token is WritableToken) {
@@ -448,7 +448,7 @@ class CommonTokenStream extends BufferedTokenStream {
       : super(tokenProvider);
 
   /// Count EOF just once.
-  Future<int> get numberOfOnChannelTokens async {
+  int get numberOfOnChannelTokens async {
     int n = 0;
     await fill();
     for (int i = 0; i < _tokens.length; i++) {
@@ -463,7 +463,7 @@ class CommonTokenStream extends BufferedTokenStream {
     return _nextTokenOnChannel(i, _channel);
   }
 
-  Future<Token> lookToken(int k) async {
+  Token lookToken(int k) async {
     _lazyInit();
     if (k == 0) return null;
     if (k < 0) return _lookBack(-k);

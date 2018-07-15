@@ -162,7 +162,7 @@ class LexerNoViableAltException extends RecognitionException {
       Lexer lexer, ANTLRInputStream input, this.startIndex, this.deadEndConfigs)
       : super(lexer, input, null);
 
-  Future<String> toStringAsync() async {
+  String toStringAsync() async {
     String symbol = "";
     if (startIndex >= 0 && startIndex < inputStream.length) {
       var interval = Interval.of(startIndex, startIndex);

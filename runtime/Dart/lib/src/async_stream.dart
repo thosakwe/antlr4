@@ -66,7 +66,7 @@ class ANTLRAsyncStream implements ANTLRInputStream {
   }
 
   @override
-  Future<int> lookAhead(int i) async {
+  int lookAhead(int i) async {
     if (_markers.isNotEmpty && _buf != null) {
       var m = _markers.first;
       var idx = _index + i - 1;
@@ -139,7 +139,7 @@ class ANTLRAsyncStream implements ANTLRInputStream {
   }
 
   @override
-  Future<int> get mark {
+  int get mark {
     var marker = new _Marker(_index);
     _markers.addLast(marker);
 
@@ -148,7 +148,7 @@ class ANTLRAsyncStream implements ANTLRInputStream {
       _buf[0] = _lastChar;
     }
 
-    return new Future<int>.value(_markers.length - 1);
+    return _markers.length - 1;
   }
 
   @override
@@ -164,7 +164,7 @@ class ANTLRAsyncStream implements ANTLRInputStream {
   }
 
   @override
-  Future<String> getText(Interval interval) async {
+  String getText(Interval interval) async {
     var marker = await mark;
     var buf = new StringBuffer();
     await seek(interval.a);

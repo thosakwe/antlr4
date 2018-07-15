@@ -133,7 +133,7 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
 
   /// Match needs to return the current input symbol, which gets put
   /// into the label for the associated token ref; e.g., x=ID.
-  Future<Token> get currentToken => _input.lookToken(1);
+  Token get currentToken => _input.lookToken(1);
 
   /// Computes the set of input symbols which could follow the current parser
   /// state and context, as given by [state] and [context], respectively.
@@ -190,7 +190,7 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
   /// A [RecognitionException] occurs when the current input symbol did not
   /// match [ttype] and the error strategy could not recover from the
   /// mismatched symbol.
-  Future<Token> match(int ttype) async {
+  Token match(int ttype) async {
     Token token = await currentToken;
     if (token.type == ttype) {
       errorHandler.reportMatch(this);
@@ -221,7 +221,7 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
   /// A [RecognitionException] occurs when the current input symbol did not
   /// match a wildcard and the error strategy could not recover from the
   /// mismatched symbol.
-  Future<Token> matchWildcard() async {
+  Token matchWildcard() async {
     Token token = await currentToken;
     if (token.type > 0) {
       errorHandler.reportMatch(this);
@@ -334,7 +334,7 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
   /// If the parser **is** in error recovery mode, the consumed symbol is
   /// added to the parse tree using [ParserRuleContext.addErrorNode],
   /// and [ParseTreeListener.visitErrorNode] is called on any parse listeners.
-  Future<Token> consume() async {
+  Token consume() async {
     Token token = await currentToken;
     if (token.type != Token.EOF) await inputStream.consume();
     bool hasListener = _parseListeners != null && !_parseListeners.isEmpty;

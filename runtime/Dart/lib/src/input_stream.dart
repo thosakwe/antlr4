@@ -67,7 +67,7 @@ abstract class ANTLRInputStream {
   ///
   /// Return an opaque marker which should be passed to [release] when the
   /// marked range is no longer required.
-  Future<int> get mark;
+  int get mark;
 
   /// Return the index into the source of the input symbol referred to by
   /// `lookAhead(1)`.
@@ -124,7 +124,7 @@ abstract class ANTLRInputStream {
   ///
   /// An [UnsupportedError] occurs when the source does not support retrieving
   /// the value of the specified symbol.
-  Future<int> lookAhead(int i);
+  int lookAhead(int i);
 
   /// This method releases a marked range created by a call to [mark]. Calls to
   /// [release] must appear in the reverse order of the corresponding access to
@@ -183,5 +183,5 @@ abstract class ANTLRInputStream {
   /// of the source.
   /// An [UnsupportedError] occurs when the source does not support getting
   /// the text of the specified interval.
-  Future<String> getText(Interval interval);
+  String getText(Interval interval);
 }

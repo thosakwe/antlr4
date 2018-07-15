@@ -12,7 +12,7 @@ import 'token_provider.dart';
 /// This is the method used to create tokens in the lexer and in the error
 /// handling strategy. If `text != null`, than the `start` and `stop` positions
 /// are wiped to `-1` in the text override is set in the [CommonToken].
-typedef Future<T> TokenFactory<T extends Token>(
+typedef T TokenFactory<T extends Token>(
     Pair<TokenProvider, ANTLRInputStream> source,
     int type,
     String text,
@@ -33,7 +33,7 @@ class CommonTokenFactory {
   /// text out of the char source.
   CommonTokenFactory([this._copyText = false]);
 
-  Future<CommonToken> call(
+  CommonToken call(
       Pair<TokenProvider, ANTLRInputStream> source,
       int type,
       String text,
@@ -80,7 +80,7 @@ abstract class Token {
   static const int HIDDEN_CHANNEL = 1;
 
   /// The text of the token.
-  Future<String> getText();
+  String getText();
 
   /// The token type of the token
   int get type;
@@ -196,15 +196,15 @@ class CommonToken implements WritableToken {
     }
   }
 
-  Future<String> getText() {
-    if (_text != null) return new Future<String>.value(_text);
+  String getText() {
+    if (_text != null) return _text;
     ANTLRInputStream input = inputStream;
     if (input == null) return null;
     int n = input.length;
     if (startIndex < n && stopIndex < n) {
       return input.getText(Interval.of(startIndex, stopIndex));
     } else {
-      return new Future<String>.value("<EOF>");
+      return "<EOF>";
     }
   }
 
@@ -223,7 +223,7 @@ class CommonToken implements WritableToken {
 
   ANTLRInputStream get inputStream => _source.b;
 
-  Future<String> toStringAsync() async {
+  String toStringAsync() async {
     String channelStr = "";
     if (channel > 0) channelStr = ",channel=$channel";
     String txt = await getText();

@@ -1,4 +1,3 @@
-import '';
 import 'dart:collection';
 import 'dart:math';
 import '../util/bit_set.dart';
@@ -218,7 +217,7 @@ class ParserAtnSimulator extends AtnSimulator {
 
   void reset() {}
 
-  Future<int> adaptivePredict(TokenStream tokenStream, int decision,
+  int adaptivePredict(TokenStream tokenStream, int decision,
       ParserRuleContext outerContext) async {
     _input = tokenStream;
     _startIndex = tokenStream.index;
@@ -294,7 +293,7 @@ class ParserAtnSimulator extends AtnSimulator {
     return token.toString();
   }
 
-  Future<String> getLookaheadName(TokenStream TokenStream) async {
+  String getLookaheadName(TokenStream TokenStream) async {
     return getTokenName(await TokenStream.lookAhead(1));
   }
 
@@ -410,7 +409,7 @@ class ParserAtnSimulator extends AtnSimulator {
   //  * single alt + preds
   //  * conflict
   //  * conflict + preds
-  Future<int> _execAtn(Dfa dfa, DfaState s0, TokenStream tokenStream,
+  int _execAtn(Dfa dfa, DfaState s0, TokenStream tokenStream,
       int startIndex, ParserRuleContext outerContext) async {
     DfaState previousD = s0;
     int token = await tokenStream.lookAhead(1);
@@ -575,7 +574,7 @@ class ParserAtnSimulator extends AtnSimulator {
   }
 
   // comes back with reach.uniqueAlt set to a valid alt
-  Future<int> _execAtnWithFullContext(
+  int _execAtnWithFullContext(
       Dfa dfa,
       DfaState D, // how far we got before failing over
       AtnConfigSet s0,
@@ -1242,7 +1241,7 @@ class ParserAtnSimulator extends AtnSimulator {
     return conflictingAlts;
   }
 
-  Future<NoViableAltException> _noViableAlt(
+  NoViableAltException _noViableAlt(
       TokenStream input,
       ParserRuleContext outerContext,
       AtnConfigSet configs,
@@ -1383,7 +1382,7 @@ class LexerAtnSimulator extends AtnSimulator {
     _startIndex = simulator._startIndex;
   }
 
-  Future<int> match(ANTLRInputStream input, int mode) async {
+  int match(ANTLRInputStream input, int mode) async {
     match_calls++;
     _mode = mode;
     int mark = await input.mark;
@@ -1418,7 +1417,7 @@ class LexerAtnSimulator extends AtnSimulator {
   }
 
   /// Get the text matched so far for the current token.
-  Future<String> getText(ANTLRInputStream input) {
+  String getText(ANTLRInputStream input) {
     // index is first lookahead char, don't include.
     return input.getText(Interval.of(_startIndex, input.index - 1));
   }
@@ -1438,7 +1437,7 @@ class LexerAtnSimulator extends AtnSimulator {
     return (t == -1) ? "EOF" : "'${new String.fromCharCode(t)}'";
   }
 
-  Future<int> _matchAtn(ANTLRInputStream input) {
+  int _matchAtn(ANTLRInputStream input) {
     AtnState startState = atn.modeToStartState[_mode];
     //int old_mode = _mode;
     AtnConfigSet s0_closure = _computeStartState(input, startState);
@@ -1449,7 +1448,7 @@ class LexerAtnSimulator extends AtnSimulator {
     return _execAtn(input, next);
   }
 
-  Future<int> _execAtn(ANTLRInputStream input, DfaState ds0) async {
+  int _execAtn(ANTLRInputStream input, DfaState ds0) async {
     int token = await input.lookAhead(1);
     DfaState state = ds0; // s is current/from DFA state
     while (true) {
@@ -1627,7 +1626,7 @@ class LexerAtnSimulator extends AtnSimulator {
   // this rule would have a lower priority.
   //
   // Return true if an accept state is reached, otherwise false.
-  Future<bool> _closure(
+  bool _closure(
       ANTLRInputStream input,
       LexerAtnConfig config,
       AtnConfigSet configs,
@@ -1681,7 +1680,7 @@ class LexerAtnSimulator extends AtnSimulator {
   }
 
   /// side-effect: can alter configs.hasSemanticContext
-  Future<LexerAtnConfig> _getEpsilonTarget(
+  LexerAtnConfig _getEpsilonTarget(
       ANTLRInputStream input,
       LexerAtnConfig config,
       Transition transition,
@@ -1771,7 +1770,7 @@ class LexerAtnSimulator extends AtnSimulator {
   // one character before the predicate's location.
   //
   // Return true if the specified predicate evaluates to true.
-  Future<bool> _evaluatePredicate(ANTLRInputStream input, int ruleIndex,
+  bool _evaluatePredicate(ANTLRInputStream input, int ruleIndex,
       int predIndex, bool speculative) async {
     // assume true if no recognizer was provided
     if (_recog == null) return true;

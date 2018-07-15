@@ -90,7 +90,7 @@ class ParserInterpreter extends Parser {
   }
 
   /// Begin parsing at [startRuleIndex].
-  Future<ParserRuleContext> parse(int startRuleIndex) async {
+  ParserRuleContext parse(int startRuleIndex) async {
     RuleStartState startRuleStartState = atn.ruleToStartState[startRuleIndex];
     var rootContext = new InterpreterRuleContext(
         null, AtnState.INVALID_STATE_NUMBER, startRuleIndex);

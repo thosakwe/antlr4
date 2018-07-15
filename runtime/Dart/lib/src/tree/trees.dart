@@ -8,7 +8,7 @@ class Trees {
   /// Print out a whole tree in LISP form. [getNodeText] is used on the
   /// node payloads to get the text for the nodes. Detect parse trees and
   /// extract data appropriately.
-  static Future<String> toStringTree(Tree tree, [dynamic rules]) async {
+  static String toStringTree(Tree tree, [dynamic rules]) async {
     if (rules is Parser) rules = rules.ruleNames;
     String s = (await getNodeText(tree, rules)).replaceAll("\t", "\\t");
     s = s.replaceAll("\n", "\\n");
@@ -23,7 +23,7 @@ class Trees {
     return sb.toString();
   }
 
-  static Future<String> getNodeText(Tree tree, dynamic rules) async {
+  static String getNodeText(Tree tree, dynamic rules) async {
     if (rules is Parser) rules = rules.ruleNames;
     if (rules != null) {
       if (tree is RuleNode) {

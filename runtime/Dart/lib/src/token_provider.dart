@@ -38,5 +38,5 @@ abstract class TokenProvider {
   /// Return a Token object from your input source.
   /// Do not fail/return upon lexing error; keep chewing on the characters
   /// until you get a good one; errors are not passed through to the parser.
-  Future<Token> nextToken();
+  Token nextToken();
 }

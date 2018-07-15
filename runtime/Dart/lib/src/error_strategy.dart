@@ -41,7 +41,7 @@ abstract class ErrorStrategy {
   ///
   /// A [RecognitionException] occurs when the error strategy was not able to
   /// recover from the unexpected input symbol.
-  Future<Token> recoverInline(Parser recognizer);
+  Token recoverInline(Parser recognizer);
 
   /// This method is called to recover from [exception]. This method is
   /// called after [reportError] by the default exception handler
@@ -288,7 +288,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   /// call [recoverInline]. To recover, it sees that `lookAhea(1)==';'`
   /// is in the set of tokens that can follow the `')'` token reference
   /// in rule `atom`. It can assume that you forgot the `')'`.
-  Future<Token> recoverInline(Parser recognizer) async {
+  Token recoverInline(Parser recognizer) async {
     // SINGLE TOKEN DELETION
     Token matchedSymbol = await _singleTokenDeletion(recognizer);
     if (matchedSymbol != null) {
@@ -404,7 +404,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // recognizer is the parser instance
   // Return true if single-token insertion is a viable recovery
   // strategy for the current mismatched input, otherwise false.
-  Future<bool> _singleTokenInsertion(Parser recognizer) async {
+  bool _singleTokenInsertion(Parser recognizer) async {
     int currentSymbolType = await recognizer.inputStream.lookAhead(1);
     // if current token is consistent with what could come after current
     // ATN state, then we know we're missing a token; error recovery
@@ -436,7 +436,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // recognizer is the parser instance
   // Return the successfully matched Token instance if single-token
   // deletion successfully recovers from the mismatched input, otherwise null.
-  Future<Token> _singleTokenDeletion(Parser recognizer) async {
+  Token _singleTokenDeletion(Parser recognizer) async {
     int nextTokenType = await recognizer.inputStream.lookAhead(2);
     IntervalSet expecting = getExpectedTokens(recognizer);
     if (expecting.contains(nextTokenType)) {
@@ -468,7 +468,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // a CommonToken of the appropriate type. The text will be the token.
   // If you change what tokens must be created by the lexer,
   // override this method to create the appropriate tokens.
-  Future<Token> _getMissingSymbol(Parser recognizer) async {
+  Token _getMissingSymbol(Parser recognizer) async {
     Token currentSymbol = await recognizer.currentToken;
     IntervalSet expecting = getExpectedTokens(recognizer);
     int expectedTokenType = expecting.minElement; // get any element
@@ -501,7 +501,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // the token). This is better than forcing you to override a method in
   // your token objects because you don't have to go modify your lexer
   // so that it creates a new Java type.
-  Future<String> _getTokenErrorDisplay(Token t) async {
+  String _getTokenErrorDisplay(Token t) async {
     if (t == null) return "<no token>";
     String s = await t.getText();
     if (s == null) {

@@ -34,7 +34,7 @@ class ANTLRByteArrayStream implements ANTLRInputStream {
   int get length => _data.length;
 
   /// mark/release do nothing; we have entire buffer.
-  Future<int> get mark => new Future<int>.value(-1);
+  int get mark => -1;
 
   /// Reset the source so that it's in the same state it was when the object
   /// was created *except* the data list is not touched.
@@ -51,7 +51,7 @@ class ANTLRByteArrayStream implements ANTLRInputStream {
     return new Future.value();
   }
 
-  Future<int> lookAhead(int i) async {
+  int lookAhead(int i) async {
     if (i == 0) return 0; // undefined
     if (i < 0) {
       // e.g., translate lookAhead(-1) to use offset i = 0; then data[p - 1]
@@ -63,7 +63,7 @@ class ANTLRByteArrayStream implements ANTLRInputStream {
     return _data[_index + i - 1];
   }
 
-  Future<int> lookToken(int i) => lookAhead(i);
+  int lookToken(int i) => lookAhead(i);
 
   Future close() => new Future.value();
 
@@ -81,14 +81,14 @@ class ANTLRByteArrayStream implements ANTLRInputStream {
   }
 
   @override
-  Future<String> getText(Interval interval) {
+  String getText(Interval interval) {
     int start = interval.a;
     int stop = interval.b;
     if (stop >= _data.length) stop = _data.length - 1;
     int count = stop - start + 1;
-    if (start >= _data.length) return new Future<String>.value("");
-    return new Future<String>.value(
-        new String.fromCharCodes(_data.getRange(start, start + count)));
+    if (start >= _data.length) return "";
+    return
+        new String.fromCharCodes(_data.getRange(start, start + count));
   }
 
   String toString() => _str ??= new String.fromCharCodes(_data);

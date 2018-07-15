@@ -116,7 +116,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
 
   /// Return a list of all Token objects in input char source.
   /// Forces load of all tokens. Does not include EOF token.
-  Future<List<Token>> get allTokens async {
+  List<Token> get allTokens async {
     List<Token> tokens = new List<Token>();
     Token token = await nextToken();
     while (token.type != Token.EOF) {
@@ -143,7 +143,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
   }
 
   /// Return a token from this source; i.e., match a token on the input source.
-  Future<Token> nextToken() async {
+  Token nextToken() async {
     if (_input == null) {
       throw new StateError("nextToken requires a non-null input source.");
     }
@@ -224,7 +224,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
   /// char buffer `start..stop`. If there is a text override in 'text',
   /// use that to set the token's text. Override this method to emit
   /// custom [Token] objects or provide a new factory.
-  Future<Token> emit() async {
+  Token emit() async {
     Token token = await tokenFactory(
         _tokenFacSourcePair,
         type,
@@ -238,7 +238,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
     return token;
   }
 
-  Future<Token> emitEof() async {
+  Token emitEof() async {
     int pos = charPositionInLine;
     // The character position for EOF is one beyond the position of
     // the previous token's last character
