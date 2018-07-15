@@ -1,4 +1,4 @@
-import 'package:bignum/bignum.dart';
+
 import '../util/interval_set.dart';
 import '../util/pair.dart';
 import '../token.dart';
@@ -527,17 +527,17 @@ class AtnDeserializer {
   }
 
   static BigInt _toInt(List<int> data, [int offset = 0]) {
-    var mask = new BigInt()..fromString('00000000FFFFFFFF', 16);
+    var mask = BigInt.parse('00000000FFFFFFFF', radix: 16);
     var lowOrder =
-        new BigInt(data[offset] | (data[offset + 1] << 16)) & mask;
+        new BigInt.from(data[offset] | (data[offset + 1] << 16)) & mask;
     var highOrder =
-        new BigInt(data[offset + 2] | data[offset + 3] << 16) << 32;
+        new BigInt.from(data[offset + 2] | data[offset + 3] << 16) << 32;
     return lowOrder | highOrder;
   }
 
   static String _digits(BigInt paramLong, int paramInt) {
-    var left = new BigInt(1 << paramInt * 4);
-    String hex = ((left | paramLong & left - BigInt.ONE)).toString(16);
+    var left = new BigInt.from(1 << paramInt * 4);
+    String hex = ((left | paramLong & left - BigInt.one)).toRadixString(16);
     return hex.substring(hex.length - paramInt);
   }
 

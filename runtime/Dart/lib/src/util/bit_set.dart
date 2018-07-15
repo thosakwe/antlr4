@@ -1,5 +1,3 @@
-import 'package:bignum/bignum.dart';
-
 /// This class implements a vector of bits that grows as needed. Each
 /// component of the bit set has a `bool` value. The
 /// bits of a `BitSet` are indexed by non-negative ints.
@@ -25,7 +23,7 @@ class BitSet {
 
   /// Creates an empty bit set.
   BitSet() {
-    _word = BigInt.ZERO;
+    _word = BigInt.zero;
   }
 
   /// Returns a hash code value for this bit set. The hash code
@@ -43,9 +41,21 @@ class BitSet {
   ///
   /// Return  a hash code value for this bit set.
   int get hashCode {
-    var h = new BigInt(1234);
+    var h = new BigInt.from(1234);
     h ^= _word;
-    return ((h >> 32) ^ h).intValue();
+    return ((h >> 32) ^ h).toInt();
+  }
+
+  static BigInt _clearBit(BigInt word, int bitIndex) {
+    return word & ~new BigInt.from(1 << bitIndex);
+  }
+
+  static BigInt _setBit(BigInt word, int bitIndex) {
+    return word | new BigInt.from(1 << bitIndex);
+  }
+
+  static bool _testBit(BigInt word, int bitIndex) {
+    return (word & new BigInt.from(1 << bitIndex)) == BigInt.zero;
   }
 
   /// Returns the "logical size" of this [BitSet]: the index of the highest
@@ -53,13 +63,13 @@ class BitSet {
   /// no set bits.
   ///
   /// Return the logical size of this [BitSet].
-  int get length => _word.bitLength();
+  int get length => _word.bitLength;
 
   /// Returns true if this [BitSet] contains no bits that are set to `true`.
-  bool get isEmpty => _word == BigInt.ZERO;
+  bool get isEmpty => _word == BigInt.zero;
 
   /// Returns the number of bits set to `true` in this [BitSet].
-  int get cardinality => _word.bitCount();
+  int get cardinality => _word.bitLength;
 
   /// Sets the bit at the specified index to the specified [value].
   ///
@@ -69,7 +79,7 @@ class BitSet {
   void set(int bitIndex, [bool value = false]) {
     if (value) {
       if (bitIndex < 0) throw new RangeError("bitIndex < 0: $bitIndex");
-      _word = _word.setBit(bitIndex);
+      _word = _setBit(_word, (bitIndex));
     } else {
       clear(bitIndex);
     }
@@ -82,7 +92,7 @@ class BitSet {
   /// A [RangeError] occurs when the specified index is negative.
   void clear(int bitIndex) {
     if (bitIndex < 0) throw new RangeError("bitIndex < 0: $bitIndex");
-    _word = _word.clearBit(bitIndex);
+    _word = _clearBit(_word, (bitIndex));
   }
 
   /// Returns the value of the bit with the specified index. The value is
@@ -94,7 +104,7 @@ class BitSet {
   /// A [RangeError] occurs when the specified index is negative.
   bool get(int bitIndex) {
     if (bitIndex < 0) throw new RangeError("bitIndex < 0: $bitIndex");
-    return _word.testBit(bitIndex);
+    return _testBit(_word, (bitIndex));
   }
 
   /// Returns the index of the first bit that is set to `true` that occurs on
@@ -113,9 +123,9 @@ class BitSet {
   /// A [RangeError] occurs when the specified index is negative.
   int nextSetBit(int fromIndex) {
     if (fromIndex < 0) throw new RangeError("fromIndex < 0: $fromIndex");
-    var size = _word.bitLength();
+    var size = _word.bitLength;
     for (int i = fromIndex; i < size; i++) {
-      if (_word.testBit(i)) return i;
+      if (_testBit(_word, (i))) return i;
     }
     return -1;
   }
@@ -128,9 +138,9 @@ class BitSet {
   /// A [RangeError] occurs when the specified index is negative.
   int nextClearBit(int fromIndex) {
     if (fromIndex < 0) throw new RangeError("fromIndex < 0: $fromIndex");
-    var size = _word.bitLength();
+    var size = _word.bitLength;
     for (int i = fromIndex; i < size; i++) {
-      if (!_word.testBit(i)) return i;
+      if (!_testBit(_word, (i))) return i;
     }
     return -1;
   }
