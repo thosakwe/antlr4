@@ -42,13 +42,12 @@ class ANTLRByteArrayStream implements ANTLRInputStream {
     _index = 0;
   }
 
-  Future consume() {
+  void consume() {
     if (_index >= _data.length) {
       assert(lookAhead(1) == Token.EOF);
       throw new StateError("cannot consume EOF");
     }
     _index++;
-    return new Future.value();
   }
 
   int lookAhead(int i) {
@@ -65,19 +64,18 @@ class ANTLRByteArrayStream implements ANTLRInputStream {
 
   int lookToken(int i) => lookAhead(i);
 
-  Future close() => new Future.value();
+  void close() {}
 
-  Future release(int marker) => new Future.value();
+  void release(int marker) {}
 
-  Future seek(int index) {
+  void seek(int index) {
     if (index <= _index) {
       _index = index; // just jump; don't update source state (line, ...)
-      return new Future.value();
+      return;
     }
     // seek forward, consume until p hits index or n (whichever comes first)
     index = min(index, _data.length);
     while (_index < index) consume();
-    return new Future.value();
   }
 
   @override

@@ -126,7 +126,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
     return tokens;
   }
 
-  Future reset() {
+  void reset() {
     // wack Lexer state variables
     if (_input != null)  _input.seek(0); // rewind the input
     token = null;
@@ -269,7 +269,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
     }
   }
 
-  Future notifyListeners(LexerNoViableAltException exception) {
+  void notifyListeners(LexerNoViableAltException exception) {
     String text =
          _input.getText(Interval.of(tokenStartCharIndex, _input.index));
     String msg = "token recognition error at: '${getErrorDisplay(text)}'";

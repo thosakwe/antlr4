@@ -126,7 +126,7 @@ class ParserInterpreter extends Parser {
     }
   }
 
-  Future enterRecursionRule(@checked ParserRuleContext localctx, int state,
+  void enterRecursionRule(ParserRuleContext localctx, int state,
       int ruleIndex, int precedence) {
     parentContextStack
         .add(new Pair<ParserRuleContext, int>(context, localctx.invokingState));
@@ -135,7 +135,7 @@ class ParserInterpreter extends Parser {
 
   AtnState _getAtnState() => atn.states[state];
 
-  Future _visitState(AtnState antState) {
+  void _visitState(AtnState antState) {
     int edge;
     if (antState.numberOfTransitions > 1) {
       edge =  interpreter.adaptivePredict(
@@ -208,7 +208,7 @@ class ParserInterpreter extends Parser {
     state = transition.target.stateNumber;
   }
 
-  Future _visitRuleStopState(AtnState p) {
+  void _visitRuleStopState(AtnState p) {
     RuleStartState ruleStartState = atn.ruleToStartState[p.ruleIndex];
     if (ruleStartState.isPrecedenceRule) {
       var parentContext = parentContextStack.removeLast();

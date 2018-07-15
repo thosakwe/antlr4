@@ -27,7 +27,7 @@ class Trees {
     if (rules is Parser) rules = rules.ruleNames;
     if (rules != null) {
       if (tree is RuleNode) {
-        return rules[tree.ruleContext.ruleIndex];
+        return rules[tree.ruleContext.ruleIndex].toString();
       } else if (tree is ErrorNode) {
         return  tree.toStringAsync();
       } else if (tree is TerminalNode) {

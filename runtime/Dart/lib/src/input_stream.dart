@@ -91,7 +91,7 @@ abstract class ANTLRInputStream {
   ///
   /// A [StateError] occurs when an attempt is made to consume the the end of
   /// the source (i.e. if `lookAhead(1) == EOF` before calling [consume]).
-  Future consume();
+  void consume();
 
   /// Gets the value of the symbol at offset `i` from the current position.
   /// When `i == 1`, this method returns the value of the current symbol in
@@ -135,7 +135,7 @@ abstract class ANTLRInputStream {
   /// For more information and an example, see [mark].
   ///
   /// [marker] is a marker returned by a call to [mark].
-  Future release(int marker);
+  void release(int marker);
 
   /// Set the input cursor to the position indicated by [index]. If the
   /// specified index lies past the end of the source, the operation behaves as
@@ -161,10 +161,10 @@ abstract class ANTLRInputStream {
   /// An [ArgumentError] occurs when the [index] is less than `0`.
   /// An [UnsupportedError] occurs when the source does not support seeking
   /// to the specified index.
-  Future seek(int index);
+  void seek(int index);
 
   /// Closes this input stream.
-  Future close();
+  void close();
 
   /// This method returns the text for a range of characters within this input
   /// source.

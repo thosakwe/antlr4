@@ -174,12 +174,12 @@ class BufferedTokenStream implements TokenStream {
   }
 
   @override
-  Future close() {
-    return _tokenProvider.inputStream.close();
+  void close() {
+    _tokenProvider.inputStream.close();
   }
 
   /// Get all tokens from lexer until EOF.
-  Future fill() {
+  void fill() {
     _lazyInit();
     int blockSize = 1000;
     while (true) {
@@ -213,19 +213,18 @@ class BufferedTokenStream implements TokenStream {
     return filteredTokens;
   }
 
-  Future release(int marker) => new Future.value();
+  void release(int marker) {}
 
   void reset() {
     seek(0);
   }
 
-  Future seek(int index) {
+  void seek(int index) {
     _lazyInit();
     _index = adjustSeekIndex(index);
-    return new Future.value();
   }
 
-  Future consume() {
+  void consume() {
     bool skipEofCheck;
     if (_index >= 0) {
       if (_fetchedEof) {
@@ -270,7 +269,7 @@ class BufferedTokenStream implements TokenStream {
     return subset;
   }
 
-  int lookAhead(int i) => lookToken(i).then((t) => t.type);
+  int lookAhead(int i) => lookToken(i).type;
 
   Token lookToken(int k) {
     _lazyInit();
