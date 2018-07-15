@@ -1,4 +1,3 @@
-
 import 'dart:math';
 import 'util/interval.dart';
 import 'input_stream.dart';
@@ -85,8 +84,7 @@ class ANTLRByteArrayStream implements ANTLRInputStream {
     if (stop >= _data.length) stop = _data.length - 1;
     int count = stop - start + 1;
     if (start >= _data.length) return "";
-    return
-        new String.fromCharCodes(_data.getRange(start, start + count));
+    return new String.fromCharCodes(_data.getRange(start, start + count));
   }
 
   String toString() => _str ??= new String.fromCharCodes(_data);

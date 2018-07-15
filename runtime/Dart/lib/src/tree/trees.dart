@@ -1,4 +1,3 @@
-
 import '../parser.dart';
 import '../token.dart';
 import 'parse_tree.dart';
@@ -10,7 +9,7 @@ class Trees {
   /// extract data appropriately.
   static String toStringTree(Tree tree, [dynamic rules]) {
     if (rules is Parser) rules = rules.ruleNames;
-    String s = ( getNodeText(tree, rules)).replaceAll("\t", "\\t");
+    String s = (getNodeText(tree, rules)).replaceAll("\t", "\\t");
     s = s.replaceAll("\n", "\\n");
     s = s.replaceAll("\r", "\\r");
     if (tree.childCount == 0) return s;
@@ -29,15 +28,15 @@ class Trees {
       if (tree is RuleNode) {
         return rules[tree.ruleContext.ruleIndex].toString();
       } else if (tree is ErrorNode) {
-        return  tree.toStringAsync();
+        return tree.toStringAsync();
       } else if (tree is TerminalNode) {
         Token symbol = tree.symbol;
-        if (symbol != null) return  symbol.getText();
+        if (symbol != null) return symbol.getText();
       }
     }
     // no recog for rule names
     Object payload = tree.payload;
-    if (payload is Token) return  payload.getText();
+    if (payload is Token) return payload.getText();
     return payload.toString();
   }
 

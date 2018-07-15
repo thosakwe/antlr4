@@ -62,7 +62,8 @@ abstract class SemanticContext {
     return result;
   }
 
-  static List<PrecedencePredicate> _filterPrecPredicates(Set<SemanticContext> iterable) {
+  static List<PrecedencePredicate> _filterPrecPredicates(
+      Set<SemanticContext> iterable) {
     List<PrecedencePredicate> result = null;
     List<SemanticContext> copy = new List<SemanticContext>.from(iterable);
     for (Iterator iterator = copy.iterator; iterator.moveNext();) {

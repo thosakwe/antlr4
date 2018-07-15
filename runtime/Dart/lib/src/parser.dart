@@ -17,7 +17,6 @@ import 'token.dart';
 import 'token_stream.dart';
 
 abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
-
   // The input source.
   TokenStream _input;
 

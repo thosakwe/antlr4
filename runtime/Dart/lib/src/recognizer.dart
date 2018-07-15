@@ -1,4 +1,3 @@
-
 import 'dart:collection';
 import 'atn/atn.dart';
 import 'atn/atn_simulator.dart';
@@ -115,7 +114,7 @@ abstract class Recognizer<T, AtnInterpreter extends AtnSimulator> {
   /// so that it creates a new Dart type.
   String getTokenErrorDisplay(Token token) {
     if (token == null) return "<no token>";
-    String s =  token.getText();
+    String s = token.getText();
     if (s == null) {
       s = (token.type == Token.EOF) ? "<EOF>" : "<${token.type}>";
     }

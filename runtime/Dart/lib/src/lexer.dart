@@ -1,4 +1,3 @@
-
 import 'atn/atn_simulator.dart';
 import 'util/interval.dart';
 import 'util/pair.dart';
@@ -118,17 +117,17 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
   /// Forces load of all tokens. Does not include EOF token.
   List<Token> get allTokens {
     List<Token> tokens = new List<Token>();
-    Token token =  nextToken();
+    Token token = nextToken();
     while (token.type != Token.EOF) {
       tokens.add(token);
-      token =  nextToken();
+      token = nextToken();
     }
     return tokens;
   }
 
   void reset() {
     // wack Lexer state variables
-    if (_input != null)  _input.seek(0); // rewind the input
+    if (_input != null) _input.seek(0); // rewind the input
     token = null;
     type = Token.INVALID_TYPE;
     channel = Token.DEFAULT_CHANNEL;
@@ -149,7 +148,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
     }
     // Mark start location in char source so unbuffered sources are
     // guaranteed at least have text of current token
-    int tokenStartMarker =  _input.mark;
+    int tokenStartMarker = _input.mark;
     try {
       outer:
       while (true) {
@@ -167,7 +166,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
           type = Token.INVALID_TYPE;
           int ttype;
           try {
-            ttype =  interpreter.match(_input, mode);
+            ttype = interpreter.match(_input, mode);
           } on LexerNoViableAltException catch (e) {
             notifyListeners(e); // report error
             recover(e);
@@ -183,7 +182,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
     } finally {
       // make sure we release marker after match or
       // unbuffered char source will keep buffering
-       _input.release(tokenStartMarker);
+      _input.release(tokenStartMarker);
     }
   }
 
@@ -225,7 +224,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
   /// use that to set the token's text. Override this method to emit
   /// custom [Token] objects or provide a new factory.
   Token emit() {
-    Token token =  tokenFactory(
+    Token token = tokenFactory(
         _tokenFacSourcePair,
         type,
         _text,
@@ -246,7 +245,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
       int n = token.stopIndex - token.startIndex + 1;
       pos = token.charPositionInLine + n;
     }
-    Token eof =  tokenFactory(_tokenFacSourcePair, Token.EOF, null,
+    Token eof = tokenFactory(_tokenFacSourcePair, Token.EOF, null,
         Token.DEFAULT_CHANNEL, _input.index, _input.index - 1, line, pos);
     emitToken(eof);
     return eof;
@@ -271,7 +270,7 @@ abstract class Lexer extends Recognizer<int, LexerAtnSimulator>
 
   void notifyListeners(LexerNoViableAltException exception) {
     String text =
-         _input.getText(Interval.of(tokenStartCharIndex, _input.index));
+        _input.getText(Interval.of(tokenStartCharIndex, _input.index));
     String msg = "token recognition error at: '${getErrorDisplay(text)}'";
     errorListenerDispatch.syntaxError(this, null, tokenStartLine,
         tokenStartCharPositionInLine, msg, exception);

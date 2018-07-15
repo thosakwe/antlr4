@@ -1,4 +1,3 @@
-
 import '../util/interval_set.dart';
 import '../util/pair.dart';
 import '../token.dart';

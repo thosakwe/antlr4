@@ -160,7 +160,8 @@ class StarBlockStartState extends BlockStartState {
 
 class StarLoopbackState extends AtnState {
   int get stateType => AtnState.STAR_LOOP_BACK;
-  StarLoopEntryState get loopEntryState => getTransition(0).target as StarLoopEntryState;
+  StarLoopEntryState get loopEntryState =>
+      getTransition(0).target as StarLoopEntryState;
 }
 
 class StarLoopEntryState extends DecisionState {

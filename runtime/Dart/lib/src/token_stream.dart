@@ -1,4 +1,3 @@
-
 import 'util/interval.dart';
 import 'input_stream.dart';
 import 'token.dart';
@@ -140,9 +139,9 @@ class BufferedTokenStream implements TokenStream {
   /// Get the text of all tokens in this buffer.
   String getAllText([Interval interval]) {
     _lazyInit();
-     fill();
+    fill();
     // TODO: Find out if this interval should be ignored...
-    return  getText(Interval.of(0, length - 1));
+    return getText(Interval.of(0, length - 1));
   }
 
   /// Reset this token source by setting its token source.
@@ -162,7 +161,7 @@ class BufferedTokenStream implements TokenStream {
     for (int i = start; i <= stop; i++) {
       Token t = _tokens[i];
       if (t.type == Token.EOF) break;
-      sb.write( t.getText());
+      sb.write(t.getText());
     }
     return sb.toString();
   }
@@ -183,7 +182,7 @@ class BufferedTokenStream implements TokenStream {
     _lazyInit();
     int blockSize = 1000;
     while (true) {
-      int fetched =  _fetch(blockSize);
+      int fetched = _fetch(blockSize);
       if (fetched < blockSize) return;
     }
   }
@@ -242,7 +241,7 @@ class BufferedTokenStream implements TokenStream {
     if (!skipEofCheck && lookAhead(1) == Token.EOF) {
       throw new StateError("cannot consume EOF");
     }
-    if ( _sync(_index + 1)) {
+    if (_sync(_index + 1)) {
       _index = adjustSeekIndex(_index + 1);
     }
   }
@@ -341,7 +340,7 @@ class BufferedTokenStream implements TokenStream {
     assert(i >= 0);
     int n = i - _tokens.length + 1; // how many more elements we need?
     if (n > 0) {
-      int fetched =  _fetch(n);
+      int fetched = _fetch(n);
       return fetched >= n;
     }
     return true;
@@ -352,7 +351,7 @@ class BufferedTokenStream implements TokenStream {
   int _fetch(int n) {
     if (_fetchedEof) return 0;
     for (int i = 0; i < n; i++) {
-      Token token =  _tokenProvider.nextToken();
+      Token token = _tokenProvider.nextToken();
       if (token is WritableToken) {
         token.tokenIndex = _tokens.length;
       }
@@ -449,7 +448,7 @@ class CommonTokenStream extends BufferedTokenStream {
   /// Count EOF just once.
   int get numberOfOnChannelTokens {
     int n = 0;
-     fill();
+    fill();
     for (int i = 0; i < _tokens.length; i++) {
       Token t = _tokens[i];
       if (t.channel == _channel) n++;
@@ -471,7 +470,7 @@ class CommonTokenStream extends BufferedTokenStream {
     // find k good tokens
     while (n < k) {
       // skip off-channel tokens, but make sure to not look past EOF
-      if ( _sync(i + 1)) {
+      if (_sync(i + 1)) {
         i = _nextTokenOnChannel(i + 1, _channel);
       }
       n++;

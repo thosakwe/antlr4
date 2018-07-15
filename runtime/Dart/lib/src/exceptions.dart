@@ -1,4 +1,3 @@
-
 import 'atn/atn_config_set.dart';
 import 'atn/atn_states.dart';
 import 'atn/transitions.dart';
@@ -166,7 +165,7 @@ class LexerNoViableAltException extends RecognitionException {
     String symbol = "";
     if (startIndex >= 0 && startIndex < inputStream.length) {
       var interval = Interval.of(startIndex, startIndex);
-      symbol =  inputStream.getText(interval);
+      symbol = inputStream.getText(interval);
       symbol = symbol.replaceAll('\t', "\\t");
       symbol = symbol.replaceAll('\n', "\\n");
       symbol = symbol.replaceAll('\r', "\\r");

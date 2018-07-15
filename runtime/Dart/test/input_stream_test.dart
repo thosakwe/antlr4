@@ -1,26 +1,18 @@
-import 'dart:async';
 import 'package:antlr/antlr.dart';
 import 'package:charcode/ascii.dart';
 import 'package:test/test.dart';
-
-typedef ANTLRInputStream _CreateStream();
-typedef ANTLRAsyncStream _CreateAsyncStream();
 
 const String jfk =
     'Ask not what your country can do for you, but what you can do for your country.';
 
 main() {
-  ANTLRAsyncStream asyncStream() =>
-      new ANTLRAsyncStream(new Stream<List<int>>.fromIterable([jfk.codeUnits]),
-          length: jfk.length, sourceName: 'jfk.txt');
-
-  ANTLRByteArrayStream byteArrayStream() => new ANTLRByteArrayStream.fromString(jfk);
+  ANTLRByteArrayStream byteArrayStream() =>
+      new ANTLRByteArrayStream.fromString(jfk);
 
   testInputStream('ByteArray', byteArrayStream);
-  testInputStream('Async', asyncStream);
 }
 
-void testInputStream(String type, _CreateStream createStream) {
+void testInputStream(String type, ANTLRInputStream Function() createStream) {
   group('ANTLR${type}Stream', () {
     ANTLRInputStream inputStream;
 
@@ -61,15 +53,14 @@ void testInputStream(String type, _CreateStream createStream) {
       });
     });
 
-    if (createStream is _CreateAsyncStream) {
-      test('lookahead(5) without mark throws state error', () async {
-        expect(() => inputStream.lookAhead(4), throwsStateError);
-      });
-
-    } else {
-      test('lookahead(5)', () async {
-        expect(await inputStream.lookAhead(5), $n);
-      });
-    }
+//    if (createStream is _CreateAsyncStream) {
+//      test('lookahead(5) without mark throws state error', () async {
+//        expect(() => inputStream.lookAhead(4), throwsStateError);
+//      });
+//    } else {
+//      test('lookahead(5)', () async {
+//        expect(await inputStream.lookAhead(5), $n);
+//      });
+//    }
   });
 }

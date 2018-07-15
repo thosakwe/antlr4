@@ -1,4 +1,3 @@
-
 import 'util/interval.dart';
 import 'util/pair.dart';
 import 'input_stream.dart';
@@ -48,7 +47,7 @@ class CommonTokenFactory {
     if (text != null) {
       t.text = text;
     } else if (_copyText && source.b != null) {
-      t.text =  source.b.getText(Interval.of(start, stop));
+      t.text = source.b.getText(Interval.of(start, stop));
     }
     return t;
   }
@@ -226,7 +225,7 @@ class CommonToken implements WritableToken {
   String toStringAsync() {
     String channelStr = "";
     if (channel > 0) channelStr = ",channel=$channel";
-    String txt =  getText();
+    String txt = getText();
     if (txt != null) {
       txt = txt.replaceAll("\n", "\\n");
       txt = txt.replaceAll("\r", "\\r");

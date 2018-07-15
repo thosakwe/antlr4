@@ -222,7 +222,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
     // If already recovering, don't try to sync
     if (inErrorRecoveryMode(recognizer)) return;
     TokenStream tokens = recognizer.inputStream;
-    int la =  tokens.lookAhead(1);
+    int la = tokens.lookAhead(1);
     // try cheaper subset first; might get lucky. seems to shave a wee bit off
     if (recognizer.atn.nextTokensInSameRule(state).contains(la) ||
         la == Token.EOF) return;
@@ -235,8 +235,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
       case AtnState.STAR_LOOP_ENTRY:
         // report error and recover if possible
         if (_singleTokenDeletion(recognizer) != null) return;
-        throw new InputMismatchException(
-            recognizer,  recognizer.currentToken);
+        throw new InputMismatchException(recognizer, recognizer.currentToken);
       case AtnState.PLUS_LOOP_BACK:
       case AtnState.STAR_LOOP_BACK:
         _reportUnwantedToken(recognizer);
@@ -289,7 +288,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   /// in rule `atom`. It can assume that you forgot the `')'`.
   Token recoverInline(Parser recognizer) {
     // SINGLE TOKEN DELETION
-    Token matchedSymbol =  _singleTokenDeletion(recognizer);
+    Token matchedSymbol = _singleTokenDeletion(recognizer);
     if (matchedSymbol != null) {
       // we have deleted the extra token.
       // now, move past ttype token as if all were ok
@@ -297,10 +296,9 @@ class DefaultErrorStrategy implements ErrorStrategy {
       return matchedSymbol;
     }
     // SINGLE TOKEN INSERTION
-    if ( _singleTokenInsertion(recognizer))
-      return _getMissingSymbol(recognizer);
+    if (_singleTokenInsertion(recognizer)) return _getMissingSymbol(recognizer);
     // even that didn't work; must throw the exception
-    throw new InputMismatchException(recognizer,  recognizer.currentToken);
+    throw new InputMismatchException(recognizer, recognizer.currentToken);
   }
 
   // This method is called to leave error recovery mode after recovering from
@@ -312,15 +310,14 @@ class DefaultErrorStrategy implements ErrorStrategy {
   }
 
   // This is called by reportError when the exception is a NoViableAltException.
-  void _reportNoViableAlternative(
-      Parser recognizer, NoViableAltException e) {
+  void _reportNoViableAlternative(Parser recognizer, NoViableAltException e) {
     TokenStream tokens = recognizer.inputStream;
     String input;
     if (tokens is TokenStream) {
       if (e.startToken.type == Token.EOF)
         input = "<EOF>";
       else
-        input =  tokens.getTextBetween(e.startToken, e.offendingToken);
+        input = tokens.getTextBetween(e.startToken, e.offendingToken);
     } else {
       input = "<unknown input>";
     }
@@ -358,8 +355,8 @@ class DefaultErrorStrategy implements ErrorStrategy {
   void _reportUnwantedToken(Parser recognizer) {
     if (inErrorRecoveryMode(recognizer)) return;
     beginErrorCondition(recognizer);
-    Token token =  recognizer.currentToken;
-    String tokenName =  _getTokenErrorDisplay(token);
+    Token token = recognizer.currentToken;
+    String tokenName = _getTokenErrorDisplay(token);
     IntervalSet expecting = getExpectedTokens(recognizer);
     String msg = "extraneous input $tokenName expecting "
         "${expecting.toTokenString(recognizer.tokenNames)}";
@@ -381,7 +378,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   void _reportMissingToken(Parser recognizer) {
     if (inErrorRecoveryMode(recognizer)) return;
     beginErrorCondition(recognizer);
-    Token t =  recognizer.currentToken;
+    Token t = recognizer.currentToken;
     IntervalSet expecting = getExpectedTokens(recognizer);
     String msg = "missing ${expecting.toTokenString(
         recognizer.tokenNames)} at ${_getTokenErrorDisplay(t)}";
@@ -404,7 +401,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // Return true if single-token insertion is a viable recovery
   // strategy for the current mismatched input, otherwise false.
   bool _singleTokenInsertion(Parser recognizer) {
-    int currentSymbolType =  recognizer.inputStream.lookAhead(1);
+    int currentSymbolType = recognizer.inputStream.lookAhead(1);
     // if current token is consistent with what could come after current
     // ATN state, then we know we're missing a token; error recovery
     // is free to conjure up and insert the missing token
@@ -436,13 +433,13 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // Return the successfully matched Token instance if single-token
   // deletion successfully recovers from the mismatched input, otherwise null.
   Token _singleTokenDeletion(Parser recognizer) {
-    int nextTokenType =  recognizer.inputStream.lookAhead(2);
+    int nextTokenType = recognizer.inputStream.lookAhead(2);
     IntervalSet expecting = getExpectedTokens(recognizer);
     if (expecting.contains(nextTokenType)) {
       _reportUnwantedToken(recognizer);
       recognizer.consume(); // simply delete extra token
       // we want to return the token we're actually matching
-      Token matchedSymbol =  recognizer.currentToken;
+      Token matchedSymbol = recognizer.currentToken;
       reportMatch(recognizer); // we know current token is correct
       return matchedSymbol;
     }
@@ -468,7 +465,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // If you change what tokens must be created by the lexer,
   // override this method to create the appropriate tokens.
   Token _getMissingSymbol(Parser recognizer) {
-    Token currentSymbol =  recognizer.currentToken;
+    Token currentSymbol = recognizer.currentToken;
     IntervalSet expecting = getExpectedTokens(recognizer);
     int expectedTokenType = expecting.minElement; // get any element
     String tokenText;
@@ -477,11 +474,11 @@ class DefaultErrorStrategy implements ErrorStrategy {
     else
       tokenText = "<missing ${recognizer.tokenNames[expectedTokenType]}>";
     Token current = currentSymbol;
-    Token lookback =  recognizer.inputStream.lookToken(-1);
+    Token lookback = recognizer.inputStream.lookToken(-1);
     if (current.type == Token.EOF && lookback != null) {
       current = lookback;
     }
-    return  recognizer.tokenFactory(
+    return recognizer.tokenFactory(
         new Pair<TokenProvider, ANTLRInputStream>(
             current.tokenProvider, current.tokenProvider.inputStream),
         expectedTokenType,
@@ -502,7 +499,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // so that it creates a new Java type.
   String _getTokenErrorDisplay(Token t) {
     if (t == null) return "<no token>";
-    String s =  t.getText();
+    String s = t.getText();
     if (s == null) {
       if (t.type == Token.EOF) {
         s = "<EOF>";
@@ -628,10 +625,10 @@ class DefaultErrorStrategy implements ErrorStrategy {
 
   // Consume tokens until one matches the given token set.
   void _consumeUntil(Parser recognizer, IntervalSet set) {
-    int ttype =  recognizer.inputStream.lookAhead(1);
+    int ttype = recognizer.inputStream.lookAhead(1);
     while (ttype != Token.EOF && !set.contains(ttype)) {
-       recognizer.consume();
-      ttype =  recognizer.inputStream.lookAhead(1);
+      recognizer.consume();
+      ttype = recognizer.inputStream.lookAhead(1);
     }
   }
 }

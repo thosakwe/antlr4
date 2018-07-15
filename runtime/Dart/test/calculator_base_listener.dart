@@ -2,12 +2,10 @@
 
 part of calculator;
 
-
 /// This class provides an empty implementation of [CalculatorListener],
 /// which can be extended to create a listener which only needs to handle
 /// a subset of the available methods.
 class CalculatorBaseListener implements CalculatorListener {
-
   /// The default implementation does nothing.
   void enterExpr(ExprContext context) {}
 
