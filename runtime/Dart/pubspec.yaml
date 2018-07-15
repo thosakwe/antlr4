@@ -10,6 +10,5 @@ environment:
 dependencies:
   charcode: ^1.0.0
   collection: ^1.0.0
-  file: ^2.0.0
 dev_dependencies:
   test: ^1.0.0
