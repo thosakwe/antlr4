@@ -21,8 +21,8 @@ import 'token_stream.dart';
 
 abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
   // To be used in shift left workaroud for dart2js
-  final BIG_ONE = BigInteger.ONE;
-  final BIG_ZERO = BigInteger.ZERO;
+  final BIG_ONE = BigInt.ONE;
+  final BIG_ZERO = BigInt.ZERO;
 
   // The input source.
   TokenStream _input;

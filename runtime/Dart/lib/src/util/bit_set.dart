@@ -21,11 +21,11 @@ import 'package:bignum/bignum.dart';
 ///
 class BitSet {
   // The bits in this BitSet.
-  BigInteger _word;
+  BigInt _word;
 
   /// Creates an empty bit set.
   BitSet() {
-    _word = BigInteger.ZERO;
+    _word = BigInt.ZERO;
   }
 
   /// Returns a hash code value for this bit set. The hash code
@@ -34,7 +34,7 @@ class BitSet {
   /// as follows.
   ///
   ///     int get hashCode {
-  ///       var h = new BigInteger(1234);
+  ///       var h = new BigInt(1234);
   ///       h ^= _word;
   ///       return ((h >> 32) ^ h).intValue();
   ///     }
@@ -43,7 +43,7 @@ class BitSet {
   ///
   /// Return  a hash code value for this bit set.
   int get hashCode {
-    var h = new BigInteger(1234);
+    var h = new BigInt(1234);
     h ^= _word;
     return ((h >> 32) ^ h).intValue();
   }
@@ -56,7 +56,7 @@ class BitSet {
   int get length => _word.bitLength();
 
   /// Returns true if this [BitSet] contains no bits that are set to `true`.
-  bool get isEmpty => _word == BigInteger.ZERO;
+  bool get isEmpty => _word == BigInt.ZERO;
 
   /// Returns the number of bits set to `true` in this [BitSet].
   int get cardinality => _word.bitCount();
