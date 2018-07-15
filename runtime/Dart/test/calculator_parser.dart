@@ -66,8 +66,8 @@ class ExprContext extends ParserRuleContext {
     if (listener is CalculatorListener) listener.exitExpr(this);
   }
 
-  dynamic accept(ParseTreeVisitor visitor) {
-    if (visitor is CalculatorVisitor)
+  T accept<T>(ParseTreeVisitor<T> visitor) {
+    if (visitor is CalculatorVisitor<T>)
       return visitor.visitExpr(this);
     else
       return visitor.visitChildren(this);
