@@ -27,7 +27,7 @@ import 'transitions.dart';
 
 abstract class AtnSimulator {
   /// Must distinguish between missing edge and edge we know leads nowhere
-  static final ERROR = new DfaState(pow(2, 53) - 1)
+  static final ERROR = new DfaState((pow(2, 53) - 1).toInt())
     ..configs = new AtnConfigSet();
 
   final Atn atn;
@@ -202,7 +202,8 @@ class ParserAtnSimulator extends AtnSimulator {
   // This maps graphs a and b to merged result c. (a,b)->c. We can avoid
   // the merge if we ever see a and b again.  Note that (b,a)->c should
   // also be examined during cache lookup.
-  DoubleKeyMap _mergeCache;
+  DoubleKeyMap<PredictionContext, PredictionContext, PredictionContext>
+      _mergeCache;
 
   TokenStream _input;
   int _startIndex;
@@ -918,7 +919,7 @@ class ParserAtnSimulator extends AtnSimulator {
     return altToPred;
   }
 
-  List _getPredicatePredictions(
+  List<PredPrediction> _getPredicatePredictions(
       BitSet ambigAlts, List<SemanticContext> altToPred) {
     List<PredPrediction> pairs = new List<PredPrediction>();
     bool containsPredicate = false;
@@ -1095,15 +1096,15 @@ class ParserAtnSimulator extends AtnSimulator {
       bool treatEofAsEpsilon) {
     switch (t.serializationType) {
       case Transition.RULE:
-        return _ruleTransition(config, t);
+        return _ruleTransition(config, t as RuleTransition);
       case Transition.PRECEDENCE:
-        return _precedenceTransition(
-            config, t, collectPredicates, inContext, fullCtx);
+        return _precedenceTransition(config, t as PrecedencePredicateTransition,
+            collectPredicates, inContext, fullCtx);
       case Transition.PREDICATE:
-        return _predTransition(
-            config, t, collectPredicates, inContext, fullCtx);
+        return _predTransition(config, t as PredicateTransition,
+            collectPredicates, inContext, fullCtx);
       case Transition.ACTION:
-        return _actionTransition(config, t);
+        return _actionTransition(config, t as ActionTransition);
       case Transition.EPSILON:
         return new AtnConfig.from(config, state: t.target);
       case Transition.ATOM:
@@ -1573,7 +1574,8 @@ class LexerAtnSimulator extends AtnSimulator {
           bool treatEofAsEpsilon = token == Token.EOF;
           if (await _closure(
               input,
-              new LexerAtnConfig.from(c, target, actionExecutor: executor),
+              new LexerAtnConfig.from(c as LexerAtnConfig, target,
+                  actionExecutor: executor),
               reach,
               currentAltReachedAcceptState,
               true,

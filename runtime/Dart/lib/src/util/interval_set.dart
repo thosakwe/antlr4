@@ -34,7 +34,7 @@ class IntervalSet {
       _intervals = new List<Interval>();
       els.forEach((e) => addSingle(e));
     } else {
-      _intervals = els;
+      _intervals = new List<Interval>.from(els as Iterable);
     }
   }
 
@@ -292,13 +292,18 @@ class IntervalSet {
   ///
   /// [a] could be a [int] or a single character [String].
   bool contains(dynamic a) {
-    if (a is String) a = a.codeUnitAt(0);
-    for (Interval i in _intervals) {
-      // list is sorted and el is before this interval; not here
-      if (a < i.a) break;
-      if (a >= i.a && a <= i.b) return true; // found in this interval
+    if (a is String)
+      a = a.codeUnitAt(0);
+    else if (a is int) {
+      for (Interval i in _intervals) {
+        // list is sorted and el is before this interval; not here
+        if (a < i.a) break;
+        if (a >= i.a && a <= i.b) return true; // found in this interval
+      }
+      return false;
     }
-    return false;
+
+    throw new ArgumentError();
   }
 
   String toString([bool elemAreChar = false]) {
@@ -386,10 +391,13 @@ class IntervalSet {
     return set;
   }
 
-  void remove(dynamic a) {
+  void remove(dynamic aa) {
+    int a;
     if (isReadonly) throw new StateError("can't alter readonly IntervalSet");
-    if (a is String) a = a.codeUnitAt(0);
+    if (aa is String) a = aa.codeUnitAt(0);
     int n = _intervals.length;
+
+    a = aa as int;
     for (int i = 0; i < n; i++) {
       Interval interval = _intervals[i];
       // list is sorted and el is before this interval; not here

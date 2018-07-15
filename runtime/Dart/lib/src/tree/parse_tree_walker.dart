@@ -12,12 +12,12 @@ class ParseTreeWalker {
       listener.visitTerminal(tree);
       return;
     }
-    enterRule(listener, tree);
+    enterRule(listener, tree as RuleNode);
     int n = tree.childCount;
     for (int i = 0; i < n; i++) {
-      walk(listener, tree.getChild(i));
+      walk(listener, tree.getChild(i) as ParseTree);
     }
-    exitRule(listener, tree);
+    exitRule(listener, tree as RuleNode);
   }
 
   void enterRule(ParseTreeListener listener, RuleNode ruleNode) {

@@ -28,9 +28,10 @@ class Interval {
   ///
   /// Return a shared object for `0..INTERVAL_POOL_MAX_VALUE` or a new [Interval]
   /// object with `a..a` in it.
-  static Interval of(dynamic a, dynamic b) {
-    if (a is String) a = a.codeUnitAt(0);
-    if (b is String) b = b.codeUnitAt(0);
+  static Interval of(dynamic aa, dynamic bb) {
+    int a, b;
+    if (aa is String) a = aa.codeUnitAt(0);
+    if (bb is String) b = bb.codeUnitAt(0);
     // cache just a..a
     if (a != b || a < 0 || a > intervalPoolMaxValue) {
       return new Interval(a, b);

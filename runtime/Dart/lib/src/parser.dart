@@ -309,7 +309,7 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
 
   void notifyErrorListeners(String msg,
       [Token offendingToken, RecognitionException e]) {
-    offendingToken = (offendingToken != null) ? offendingToken : currentToken;
+    offendingToken = offendingToken ?? currentToken;
     _syntaxErrors++;
     int line = -1;
     int charPositionInLine = -1;
@@ -379,7 +379,7 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
     // trigger event on context, before it reverts to parent
     if (_parseListeners != null) triggerExitRuleEvent();
     state = context.invokingState;
-    context = context.parent;
+    context = context.parent as ParserRuleContext;
   }
 
   void enterOuterAlt(ParserRuleContext localctx, int altNum) {
@@ -427,7 +427,7 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
     if (_parseListeners != null) {
       while (context != parentctx) {
         triggerExitRuleEvent();
-        context = context.parent;
+        context = context.parent as ParserRuleContext;
       }
     } else {
       context = parentctx;
@@ -442,7 +442,7 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
     ParserRuleContext parent = context;
     while (parent != null) {
       if (parent.ruleIndex == ruleIndex) return parent;
-      parent = parent.parent;
+      parent = parent.parent as ParserRuleContext;
     }
     return null;
   }
@@ -473,7 +473,7 @@ abstract class Parser extends Recognizer<Token, ParserAtnSimulator> {
       RuleTransition rt = invokingState.getTransition(0);
       following = atn.nextTokensInSameRule(rt.followState);
       if (following.contains(symbol)) return true;
-      ctx = ctx.parent;
+      ctx = ctx.parent as ParserRuleContext;
     }
     if (following.contains(Token.EPSILON) && symbol == Token.EOF) return true;
     return false;

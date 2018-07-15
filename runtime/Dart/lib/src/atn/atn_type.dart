@@ -8,7 +8,7 @@ class AtnType {
 
   static const Map<int, AtnType> values = const {0: LEXER, 1: PARSER};
 
-  final name;
+  final String name;
 
   const AtnType._internal(this.name);
 

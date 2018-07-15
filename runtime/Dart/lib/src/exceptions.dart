@@ -143,13 +143,11 @@ class NoViableAltException extends RecognitionException {
       Token offendingToken,
       ParserRuleContext context,
       this.deadEndConfigs})
-      : startToken = _getObject(startToken, recognizer.currentToken),
-        super(recognizer, _getObject(inputStream, recognizer.inputStream),
-            _getObject(context, recognizer.context)) {
-    this.offendingToken = _getObject(offendingToken, recognizer.currentToken);
+      : startToken = startToken ?? recognizer.currentToken,
+        super(recognizer, inputStream ?? recognizer.inputStream,
+            context ?? recognizer.context) {
+    this.offendingToken = offendingToken ?? recognizer.currentToken;
   }
-
-  static dynamic _getObject(o1, o2) => o1 != null ? o1 : o2;
 }
 
 class LexerNoViableAltException extends RecognitionException {

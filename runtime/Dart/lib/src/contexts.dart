@@ -183,11 +183,12 @@ class ParserRuleContext extends RuleContext {
   /// Does not set parent link; other add methods do that.
   dynamic addChild(dynamic child) {
     if (child is Token) {
-      child = new TerminalNode(child);
+      child = new TerminalNode(child as Token);
       child.parent = this;
     }
+    assert(child is ParseTree);
     if (children == null) children = new List<ParseTree>();
-    children.add(child);
+    children.add(child as ParseTree);
     return child;
   }
 
@@ -275,7 +276,7 @@ class ParserRuleContext extends RuleContext {
     return contexts == null ? [] : contexts;
   }
 
-  /*
+/*
   // Used for rule context info debugging during parse-time, not so much
   // for ATN debugging.
   String _toInfoString(Parser recognizer) {

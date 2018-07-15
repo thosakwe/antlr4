@@ -105,8 +105,8 @@ class AtnDeserializer {
       if (stype == AtnState.LOOP_END) {
         // special case
         int loopBackStateNumber = codes[p++];
-        loopBackStateNumbers
-            .add(new Pair<LoopEndState, int>(state, loopBackStateNumber));
+        loopBackStateNumbers.add(new Pair<LoopEndState, int>(
+            state as LoopEndState, loopBackStateNumber));
       } else if (state is BlockStartState) {
         int endStateNumber = codes[p++];
         endStateNumbers
@@ -118,7 +118,8 @@ class AtnDeserializer {
     // delay the assignment of loop back and end states until we
     // know all the state instances have been initialized
     loopBackStateNumbers.forEach((p) => p.a.loopBackState = atn.states[p.b]);
-    endStateNumbers.forEach((p) => p.a.endState = atn.states[p.b]);
+    endStateNumbers
+        .forEach((p) => p.a.endState = atn.states[p.b] as BlockEndState);
     int numNonGreedyStates = codes[p++];
     for (int i = 0; i < numNonGreedyStates; i++) {
       int stateNumber = codes[p++];
@@ -155,16 +156,17 @@ class AtnDeserializer {
     }
     atn.ruleToStopState = new List<RuleStopState>(nrules);
     for (AtnState state in atn.states) {
-      if (state is! RuleStopState) continue;
-      atn
-        ..ruleToStopState[state.ruleIndex] = state
-        ..ruleToStartState[state.ruleIndex].stopState = state;
+      if (state is RuleStopState) {
+        atn
+          ..ruleToStopState[state.ruleIndex] = state
+          ..ruleToStartState[state.ruleIndex].stopState = state;
+      }
     }
     // MODES
     int nmodes = codes[p++];
     for (int i = 0; i < nmodes; i++) {
       var t = atn.states[codes[p++]];
-      atn.modeToStartState.add(t);
+      atn.modeToStartState.add(t as TokensStartState);
     }
 
     // SETS
@@ -353,7 +355,8 @@ class AtnDeserializer {
         if (arg3 != 0) return new RangeTransition(target, Token.EOF, arg2);
         return new RangeTransition(target, arg1, arg2);
       case Transition.RULE:
-        return new RuleTransition(atn.states[arg1], arg2, arg3, target);
+        return new RuleTransition(
+            atn.states[arg1] as RuleStartState, arg2, arg3, target);
       case Transition.PREDICATE:
         return new PredicateTransition(target, arg1, arg2, arg3 != 0);
       case Transition.PRECEDENCE:

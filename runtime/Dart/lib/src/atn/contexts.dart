@@ -128,10 +128,13 @@ abstract class PredictionContext {
     }
     // convert singleton so both are arrays to normalize
     if (contextA is SingletonPredictionContext)
-      contextA = new ListPredictionContext.from(contextA);
+      contextA = new ListPredictionContext.from(
+          contextA as SingletonPredictionContext);
     if (contextB is SingletonPredictionContext)
-      contextB = new ListPredictionContext.from(contextB);
-    return mergeLists(contextA, contextB, rootIsWildcard, mergeCache);
+      contextB = new ListPredictionContext.from(
+          contextB as SingletonPredictionContext);
+    return mergeLists(contextA as ListPredictionContext,
+        contextB as ListPredictionContext, rootIsWildcard, mergeCache);
   }
 
   /// Merge two [SingletonPredictionContext] instances.

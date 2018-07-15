@@ -96,7 +96,7 @@ class TerminalNode implements ParseTree {
 
   ParseTree getChild(int i) => null;
 
-  dynamic accept(ParseTreeVisitor visitor) => visitor.visitTerminal(this);
+  T accept<T>(ParseTreeVisitor<T> visitor) => visitor.visitTerminal(this);
 
   Future<String> toStringAsync() => (symbol.type == Token.EOF)
       ? new Future<String>.value("<EOF>")
@@ -117,5 +117,5 @@ class TerminalNode implements ParseTree {
 class ErrorNode extends TerminalNode {
   ErrorNode(Token token) : super(token);
 
-  dynamic accept(ParseTreeVisitor visitor) => visitor.visitErrorNode(this);
+  T accept<T>(ParseTreeVisitor<T> visitor) => visitor.visitErrorNode(this);
 }
