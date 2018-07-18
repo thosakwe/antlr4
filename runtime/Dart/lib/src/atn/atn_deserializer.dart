@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-import 'package:utf/utf.dart' as utf;
 import '../util/interval_set.dart';
 import '../util/pair.dart';
 import '../token.dart';
@@ -73,15 +71,14 @@ class AtnDeserializer {
             ? deserializationOptions
             : AtnDeserializationOptions.defaultOptions;
 
-  Atn deserialize(String data) => deserializeBytes(new Uint16List.fromList(
-      utf.decodeUtf16leAsIterable(data.codeUnits).toList()));
+  Atn deserialize(String data) => deserializeBytes(data.codeUnits);
 
-  Atn deserializeBytes(Uint16List data) {
+  Atn deserializeBytes(List<int> data) {
     //var iterator = data.codeUnits.skip(1).iterator;
     //List<int> codes = new List<int>();
     //iterator.moveNext();
     //while (iterator.moveNext()) codes.add(iterator.current - 2);
-    var codes = data;
+    var codes = data.toList();
 
     for (int i = 1; i < codes.length; i++) {
       codes[i] = (codes[i] - 2);
@@ -167,7 +164,7 @@ class AtnDeserializer {
           // this piece of unused metadata was serialized prior to the
           // addition of LexerAction
           p++;
-          //int actionIndexIgnored = codes[p++];
+          int actionIndexIgnored = codes[p++];
         }
       }
     }
@@ -249,7 +246,14 @@ class AtnDeserializer {
     // DECISIONS
     int ndecisions = codes[p++];
     for (int i = 1; i <= ndecisions; i++) {
-      DecisionState decState = atn.states[codes[p++]];
+      var s = codes[p++];
+
+      for (int i = 0; i < atn.states.length; i++) {
+        print('$i => ${atn.states[i].runtimeType}');
+      }
+
+      print('Hey: $s???');
+      var decState = atn.states[s] as DecisionState;
       atn.decisionToState.add(decState);
       decState.decision = i - 1;
     }
