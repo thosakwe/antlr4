@@ -2,13 +2,14 @@ name: antlr
 version: 4.7.0
 description: Dart runtime for ANTLR.
 authors:
-  - Tobe Osakwe <thosakwe@gmail.com>
   - Tiago Mazzutti <tiagomzt@gmail.com>
+  - Tobe Osakwe <thosakwe@gmail.com>
 homepage: https://github.com/antlr/antlr4/tree/master/runtime/Dart
 environment:
   sdk: ">=2.0.0-dev <3.0.0"
 dependencies:
   charcode: ^1.0.0
   collection: ^1.0.0
+  utf: ^0.9.0
 dev_dependencies:
   test: ^1.0.0

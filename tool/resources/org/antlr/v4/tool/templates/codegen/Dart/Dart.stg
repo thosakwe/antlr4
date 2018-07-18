@@ -763,6 +763,19 @@ class <lexer.name> extends <superClass; null="Lexer"> {
 >>
 
 SerializedATN(model) ::= <<
+static const List\<int> _serializedAtnBytes = const \<int>[
+	<if(rest(model.segments))>
+		// Multiple segments
+		{ segment | <segment; wrap={<\n>   }> }
+	<else>
+		<! Just one segment. !>
+		// Single segment
+		<model.serialized; wrap={<\n>   }>
+	<endif>
+];
+>>
+
+SerializedATNOld(model) ::= <<
 <if(rest(model.segments))>
 <\n>static const String _serializedAtn =  <model.segments:{segment| "<segment; wrap={"<\n><\t>"}>"}; separator="\n">;
 

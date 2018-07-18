@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+import 'package:utf/utf.dart' as utf;
 import '../util/interval_set.dart';
 import '../util/pair.dart';
 import '../token.dart';
@@ -66,15 +68,27 @@ class AtnDeserializer {
             ? deserializationOptions
             : AtnDeserializationOptions.defaultOptions;
 
-  Atn deserialize(String data) {
-    var codes = data.runes.skip(1).map((r) => r - 2).toList();
+  Atn deserialize(String data) => deserializeBytes(data.codeUnits);
+
+  Atn deserializeBytes(List<int> data) {
+    //var iterator = data.codeUnits.skip(1).iterator;
+    //List<int> codes = new List<int>();
+    //iterator.moveNext();
+    //while (iterator.moveNext()) codes.add(iterator.current - 2);
+    var codes = new Uint16List.fromList(utf.decodeUtf16leAsIterable(data).toList());
+
+    for (int i = 1; i < codes.length; i++) {
+      codes[i] = (codes[i] - 2);
+    }
+
     int p = 0;
-    int version = codes[p++] + 2;
+    int version = codes[p++]; // + 2;
     if (version != SERIALIZED_VERSION) {
       throw new UnsupportedError("Could not deserialize ATN "
           "with version $version (expected $SERIALIZED_VERSION).");
     }
-    String uuid = _toUuid(codes.getRange(p, p += 8).toList());
+    String uuid = _toUuid(codes.getRange(p, p + 8).toList());
+    p += 8;
     if (!_SUPPORTED_UUIDS.contains(uuid)) {
       throw new UnsupportedError("Could not deserialize ATN "
           "with UUID $uuid (expected $SERIALIZED_UUID or a legacy UUID).");

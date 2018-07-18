@@ -140,13 +140,22 @@ public class DartTarget extends Target {
 			throw new IllegalArgumentException(String.format("Cannot encode the specified value: %d", v));
 		}
 
-		if (v >= 0 && v <= 255) {
-			return "\\x"+ Integer.toHexString(v|0x100).substring(1,3);
-		}
-
-		String hex = Integer.toHexString(v|0x10000).substring(1,5);
-		return "\\u"+hex;
+		return "0x" + Integer.toHexString(v) + ", ";
 	}
+
+//	@Override
+//	public String encodeIntAsCharEscape(int v) {
+//		if (v < Character.MIN_VALUE || v > Character.MAX_VALUE) {
+//			throw new IllegalArgumentException(String.format("Cannot encode the specified value: %d", v));
+//		}
+//
+//		if (v >= 0 && v <= 255) {
+//			return "\\x"+ Integer.toHexString(v|0x100).substring(1,3);
+//		}
+//
+//		String hex = Integer.toHexString(v|0x10000).substring(1,5);
+//		return "\\u"+hex;
+//	}
 
 	@Override
 	public int getSerializedATNSegmentLimit() {
