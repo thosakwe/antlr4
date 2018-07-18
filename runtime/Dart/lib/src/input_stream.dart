@@ -1,3 +1,4 @@
+import 'string_input_stream.dart';
 import 'util/interval.dart';
 
 /// A simple source of symbols whose values are represented as integers. This
@@ -16,6 +17,9 @@ abstract class ANTLRInputStream {
   /// The value returned by [sourceName] when the actual name of the
   /// underlying source is not known.
   static const String UNKNOWN_SOURCE_NAME = "<unknown>";
+
+  /// Shortcut for [ANTLRByteArrayStream].
+  factory ANTLRInputStream(String input) => new ANTLRByteArrayStream.fromString(input);
 
   /// Returns the total number of symbols in the source, including a single EOF
   /// symbol.

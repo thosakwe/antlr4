@@ -4,7 +4,7 @@ import 'token.dart';
 import 'token_provider.dart';
 
 /// An [InputSource] whose symbols are [Token] instances.
-abstract class TokenStream extends ANTLRInputStream {
+abstract class TokenStream implements ANTLRInputStream {
   /// The underlying [TokenProvider] which provides tokens for this source.
   TokenProvider get tokenProvider;
 
