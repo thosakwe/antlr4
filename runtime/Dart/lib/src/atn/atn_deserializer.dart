@@ -46,10 +46,14 @@ class AtnDeserializationOptions {
 }
 
 class AtnDeserializer {
-  static const _BASE_SERIALIZED_UUID = "33761B2D-78BB-4A43-8B0B-4F5BEE8AACF3";
-  static const _ADDED_PRECEDENCE_TRANSITIONS =
+  static const String _BASE_SERIALIZED_UUID =
+      "33761B2D-78BB-4A43-8B0B-4F5BEE8AACF3";
+  static const String _ADDED_PRECEDENCE_TRANSITIONS =
       "1DA0C57D-6C06-438A-9B27-10BCB3CE0F61";
-  static const _ADDED_LEXER_ACTIONS = "AADB8D7E-AEEF-4415-AD2B-8204D6CF042E";
+  static const String _ADDED_LEXER_ACTIONS =
+      "AADB8D7E-AEEF-4415-AD2B-8204D6CF042E";
+  static const String _ADDED_UNICODE_SMP =
+      "59627784-3BE5-417A-B9EB-8131A7286089";
 
   static const int SERIALIZED_VERSION = 3;
 
@@ -58,7 +62,8 @@ class AtnDeserializer {
   static const List<String> _SUPPORTED_UUIDS = const <String>[
     _BASE_SERIALIZED_UUID,
     _ADDED_PRECEDENCE_TRANSITIONS,
-    _ADDED_LEXER_ACTIONS
+    _ADDED_LEXER_ACTIONS,
+    _ADDED_UNICODE_SMP,
   ];
 
   final AtnDeserializationOptions _deserializationOptions;
@@ -68,14 +73,15 @@ class AtnDeserializer {
             ? deserializationOptions
             : AtnDeserializationOptions.defaultOptions;
 
-  Atn deserialize(String data) => deserializeBytes(data.codeUnits);
+  Atn deserialize(String data) => deserializeBytes(new Uint16List.fromList(
+      utf.decodeUtf16leAsIterable(data.codeUnits).toList()));
 
-  Atn deserializeBytes(List<int> data) {
+  Atn deserializeBytes(Uint16List data) {
     //var iterator = data.codeUnits.skip(1).iterator;
     //List<int> codes = new List<int>();
     //iterator.moveNext();
     //while (iterator.moveNext()) codes.add(iterator.current - 2);
-    var codes = new Uint16List.fromList(utf.decodeUtf16leAsIterable(data).toList());
+    var codes = data;
 
     for (int i = 1; i < codes.length; i++) {
       codes[i] = (codes[i] - 2);

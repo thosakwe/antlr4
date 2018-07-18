@@ -540,7 +540,7 @@ class TraceListener implements ParseTreeListener {
 
   void enterEveryRule(ParserRuleContext ctx) {
     print("enter   ${_parser.ruleNames[ctx.ruleIndex]}, "
-        "lookToken(1)=${ (_parser._input.lookToken(1)).getText()}");
+        "lookToken(1)=${ (_parser._input.lookToken(1)).text}");
   }
 
   void visitTerminal(TerminalNode node) {
@@ -552,7 +552,7 @@ class TraceListener implements ParseTreeListener {
 
   void exitEveryRule(ParserRuleContext ctx) {
     print("exit    ${_parser.ruleNames[ctx.ruleIndex]}"
-        ", lookToken(1)=${ (_parser._input.lookToken(1)).getText()}");
+        ", lookToken(1)=${ (_parser._input.lookToken(1)).text}");
   }
 }
 

@@ -9,7 +9,7 @@ main() {
     var tokens = new CommonTokenStream(lexer);
     var parser = new CalculatorParser(tokens);
     var expr = parser.expr();
-    print(await expr.getText());
+    print(await expr.text);
     input.close();
   });
 }

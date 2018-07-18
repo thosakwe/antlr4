@@ -499,7 +499,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
   // so that it creates a new Java type.
   String _getTokenErrorDisplay(Token t) {
     if (t == null) return "<no token>";
-    String s = t.getText();
+    String s = t.text;
     if (s == null) {
       if (t.type == Token.EOF) {
         s = "<EOF>";

@@ -147,7 +147,9 @@ T visit<lname; format="cap">(<lname; format="cap">Context context) => visitChild
 
 fileHeader(grammarFileName, ANTLRVersion) ::= <<
 // Generated from <grammarFileName; format="dart-escape"> by antlr4dart
+import 'dart:typed_data';
 import 'package:antlr/antlr.dart';
+import 'package:utf/utf.dart' as utf;
 >>
 
 Parser(parser, funcs, atn,  sempredFuncs, superClass) ::= <<
@@ -755,7 +757,7 @@ class <lexer.name> extends <superClass; null="Lexer"> {
     interpreter = new LexerAtnSimulator(atn, _decisionToDfa, sharedContextCache, this);
   }
 
-  String get serializedAtn => _serializedAtn;
+  String get serializedAtn => utf.decodeUtf16(_serializedAtnBytes);
 
   String get grammarFileName => "<lexer.grammarFileName>";
   <dumpActions(lexer, "", actionFuncs, sempredFuncs)>
@@ -763,16 +765,13 @@ class <lexer.name> extends <superClass; null="Lexer"> {
 >>
 
 SerializedATN(model) ::= <<
-static const List\<int> _serializedAtnBytes = const \<int>[
-	<if(rest(model.segments))>
-		// Multiple segments
-		{ segment | <segment; wrap={<\n>   }> }
-	<else>
-		<! Just one segment. !>
-		// Single segment
+static final Uint16List _serializedAtnBytes = new Uint16List.fromList(const \<int>[
+	<if(model.serialized)>
 		<model.serialized; wrap={<\n>   }>
 	<endif>
-];
+]);
+
+final Atn atn = AtnSimulator.deserializeBytes(_serializedAtnBytes);
 >>
 
 SerializedATNOld(model) ::= <<

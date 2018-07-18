@@ -79,7 +79,8 @@ abstract class Token {
   static const int HIDDEN_CHANNEL = 1;
 
   /// The text of the token.
-  String getText();
+  String get text;
+  //String getText();
 
   /// The token type of the token
   int get type;
@@ -195,7 +196,7 @@ class CommonToken implements WritableToken {
     }
   }
 
-  String getText() {
+  String get text {
     if (_text != null) return _text;
     ANTLRInputStream input = inputStream;
     if (input == null) return null;
@@ -225,7 +226,7 @@ class CommonToken implements WritableToken {
   String toStringAsync() {
     String channelStr = "";
     if (channel > 0) channelStr = ",channel=$channel";
-    String txt = getText();
+    String txt = text;
     if (txt != null) {
       txt = txt.replaceAll("\n", "\\n");
       txt = txt.replaceAll("\r", "\\r");

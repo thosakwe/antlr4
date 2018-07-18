@@ -51,11 +51,11 @@ class RuleContext implements RuleNode {
   /// Since tokens on hidden channels (e.g. whitespace or comments) are not
   /// added to the parse trees, they will not appear in the output of this
   /// method.
-  String getText() {
+  String get text {
     if (childCount == 0) return "";
     StringBuffer sb = new StringBuffer();
     for (int i = 0; i < childCount; i++) {
-      sb.write(getChild(i).getText());
+      sb.write(getChild(i).text);
     }
     return sb.toString();
   }

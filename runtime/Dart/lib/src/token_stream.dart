@@ -161,7 +161,7 @@ class BufferedTokenStream implements TokenStream {
     for (int i = start; i <= stop; i++) {
       Token t = _tokens[i];
       if (t.type == Token.EOF) break;
-      sb.write(t.getText());
+      sb.write(t.text);
     }
     return sb.toString();
   }

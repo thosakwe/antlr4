@@ -31,12 +31,12 @@ class Trees {
         return tree.toStringAsync();
       } else if (tree is TerminalNode) {
         Token symbol = tree.symbol;
-        if (symbol != null) return symbol.getText();
+        if (symbol != null) return symbol.text;
       }
     }
     // no recog for rule names
     Object payload = tree.payload;
-    if (payload is Token) return payload.getText();
+    if (payload is Token) return payload.text;
     return payload.toString();
   }
 

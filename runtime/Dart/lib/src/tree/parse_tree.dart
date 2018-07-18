@@ -68,7 +68,7 @@ abstract class ParseTree extends SyntaxTree {
   /// Return the combined text of all leaf nodes. Does not get any
   /// off-channel tokens (if any) so won't return whitespace and
   /// comments if they are sent to parser on hidden channel.
-  String getText();
+  String get text;
 }
 
 abstract class RuleNode extends ParseTree {
@@ -85,7 +85,7 @@ class TerminalNode implements ParseTree {
 
   int get childCount => 0;
 
-  String getText() => symbol.getText();
+  String get text => symbol.text;
 
   Interval get sourceInterval {
     if (symbol == null) return Interval.invalid;
@@ -98,7 +98,7 @@ class TerminalNode implements ParseTree {
   T accept<T>(ParseTreeVisitor<T> visitor) => visitor.visitTerminal(this);
 
   String toStringAsync() =>
-      (symbol.type == Token.EOF) ? "<EOF>" : symbol.getText();
+      (symbol.type == Token.EOF) ? "<EOF>" : symbol.text;
 
   /// Use [toStringAsync] instead.
   @deprecated
