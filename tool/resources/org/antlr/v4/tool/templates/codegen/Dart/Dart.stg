@@ -147,6 +147,7 @@ T visit<lname; format="cap">(<lname; format="cap">Context context) => visitChild
 
 fileHeader(grammarFileName, ANTLRVersion) ::= <<
 // Generated from <grammarFileName; format="dart-escape"> by antlr4dart
+import 'package:antlr/antlr.dart';
 >>
 
 Parser(parser, funcs, atn,  sempredFuncs, superClass) ::= <<

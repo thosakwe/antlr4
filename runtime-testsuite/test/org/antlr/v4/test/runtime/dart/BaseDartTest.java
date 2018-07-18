@@ -123,7 +123,7 @@ public class BaseDartTest implements RuntimeTestSupport {
 	public String execModule(String fileName) {
 		// We MUST find the .packages file from target/classes/Dart
 		Path currentPath = FileSystems.getDefault().getPath(".").toAbsolutePath();
-		Path packagesPath = Paths.get(currentPath.toString(), "targets", "classes", "Dart", ".packages");
+		Path packagesPath = Paths.get(currentPath.toString(), "target", "classes", "Dart", ".packages");
 
 		String dartExecutable = locateDart();
 		String modulePath = new File(overall_tmpdir, fileName).getAbsolutePath();
@@ -144,6 +144,7 @@ public class BaseDartTest implements RuntimeTestSupport {
 				output = null;
 			}
 			if (stderrVacuum.toString().length() > 0) {
+				System.out.println("UHHHH: " + stderrVacuum.toString());
 				this.stderrDuringParse = stderrVacuum.toString();
 			}
 			return output;
@@ -166,8 +167,9 @@ public class BaseDartTest implements RuntimeTestSupport {
 
 	protected void writeLexerTestFile(String lexerName, boolean showDFA) {
 		ST outputFileST = new ST(
-				"import 'package:antlr/antlr.dart';"
-						+ "import 'lexer_dart.dart';\n"
+				"import 'dart:io';"
+						+ "import 'package:antlr/antlr.dart';"
+						+ "import 'parser/<lexerLower>.dart';\n"
 						+ "main(List\\<String> args) async {\n"
 						+ "  var contents = await new File(args[0]).readAsString();\n"
 						+ "  var input = new ANTLRInputStream(contents);\n"
@@ -180,6 +182,7 @@ public class BaseDartTest implements RuntimeTestSupport {
 		);
 		// TODO: ShowDFA for Dart lexer tests
 		outputFileST.add("lexerName", lexerName);
+		outputFileST.add("lexerLower", lexerName.toLowerCase());
 		writeFile(overall_tmpdir.toString(), "test.dart", outputFileST.render());
 	}
 
@@ -235,13 +238,12 @@ public class BaseDartTest implements RuntimeTestSupport {
 		ST outputFileST = new ST(
 				"import 'dart:io';"
 						+ "import 'package:antlr/antlr.dart';"
-						+ "import 'package:file/local.dart';"
-						+ "import 'lexer_dart.dart';\n"
-						+ "import 'parser_dart.dart';\n"
+						+ "import 'parser/<lexerLower>.dart';\n"
+						+ "import 'parser/<parserLower>.dart';\n"
 						+ "main(List\\<String> args) async {\n"
 						+ "  var contents = await new File(args[0]).readAsString();\n"
 						+ "  var input = new ANTLRInputStream(contents);\n"
-						+ "  var lexer = new <lexerName>(input);\n"
+						+ "  var lexer = new <lexerName>Lexer(input);\n"
 						+ "  var stream = new CommonTokenStream(lexer);\n"
 						+ "  <createParser>\n"
 						+ "  p.buildParseTrees = true;\n"
@@ -263,15 +265,18 @@ public class BaseDartTest implements RuntimeTestSupport {
 		);
 
 		ST createParserST = new ST(
-				"	var p = new <parserName>(stream);\n");
+				"	var p = new <parserName>Parser(stream);\n");
 		if (debug) {
 			createParserST = new ST(
-					"	var p = new <parserName>(stream);\n"
+					"	var p = new <parserName>Parser(stream);\n"
 							+ "	p.addErrorListener(new DiagnosticErrorListener(true));\n");
 		}
 		outputFileST.add("createParser", createParserST);
 		outputFileST.add("parserName", parserName);
 		outputFileST.add("lexerName", lexerName);
+		outputFileST.add("lexerLower", lexerName.toLowerCase() + "_lexer");
+		//outputFileST.add("lexerLower", lexerName.toLowerCase() + "_lexer");
+		outputFileST.add("parserLower", parserName.toLowerCase() + "_parser");
 		outputFileST.add("listenerName", listenerName);
 		outputFileST.add("visitorName", visitorName);
 		outputFileST.add("parserStartRuleName", parserStartRuleName.substring(0, 1).toUpperCase() + parserStartRuleName.substring(1));

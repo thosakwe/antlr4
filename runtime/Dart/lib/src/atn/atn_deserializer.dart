@@ -67,9 +67,7 @@ class AtnDeserializer {
             : AtnDeserializationOptions.defaultOptions;
 
   Atn deserialize(String data) {
-    RuneIterator iterator = data.runes.iterator;
-    List<int> codes = new List<int>();
-    while (iterator.moveNext()) codes.add(iterator.current - 2);
+    var codes = data.runes.skip(1).map((r) => r - 2).toList();
     int p = 0;
     int version = codes[p++] + 2;
     if (version != SERIALIZED_VERSION) {
