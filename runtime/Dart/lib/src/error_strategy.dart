@@ -406,7 +406,7 @@ class DefaultErrorStrategy implements ErrorStrategy {
     // ATN state, then we know we're missing a token; error recovery
     // is free to conjure up and insert the missing token
     AtnState currentState = recognizer.interpreter.atn.states[recognizer.state];
-    AtnState next = currentState.getTransition(0).target;
+    AtnState next = currentState.transitions[0].target;
     Atn atn = recognizer.interpreter.atn;
     IntervalSet expectingAtLL2 = atn.nextTokens(next, recognizer.context);
     if (expectingAtLL2.contains(currentSymbolType)) {

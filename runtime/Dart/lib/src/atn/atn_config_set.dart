@@ -89,11 +89,11 @@ class AtnConfigSet extends DelegatingList<AtnConfig> {
     return hash & 0xFFFFFFFF;
   }
 
-  int get length => length;
+  //int get length => length;
 
-  bool get isEmpty => isEmpty;
+  //bool get isEmpty => isEmpty;
 
-  Iterator<AtnConfig> get iterator => iterator;
+  //Iterator<AtnConfig> get iterator => iterator;
 
   bool get isReadonly => _readonly;
 

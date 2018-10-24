@@ -11,6 +11,7 @@ import org.antlr.v4.test.runtime.StreamVacuum;
 import org.stringtemplate.v4.ST;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -82,6 +83,26 @@ public class BaseDartTest implements RuntimeTestSupport {
 		return antlrToolErrors.length() == 0 ? null : antlrToolErrors.toString();
 	}
 
+	private static String locatePub() {
+		String dartExecutable = locateDart();
+
+		if (dartExecutable == null) {
+			return null;
+		} else {
+			File binDir = new File(dartExecutable).getParentFile();
+			File windowsPub = new File(binDir, "pub.bat");
+			File unixPub = new File(binDir, "pub");
+
+			if (windowsPub.exists()) {
+				return windowsPub.getPath();
+			} else if (unixPub.exists()) {
+				return unixPub.getPath();
+			} else {
+				return null;
+			}
+		}
+	}
+
 	private static String locateDart() {
 		ArrayList<String> paths = new ArrayList<>();
 
@@ -123,13 +144,50 @@ public class BaseDartTest implements RuntimeTestSupport {
 	public String execModule(String fileName) {
 		// We MUST find the .packages file from target/classes/Dart
 		Path currentPath = FileSystems.getDefault().getPath(".").toAbsolutePath();
-		Path packagesPath = Paths.get(currentPath.toString(), "target", "classes", "Dart", ".packages");
+		Path dartAntlrPath = Paths.get(currentPath.toString(), "..", "runtime", "Dart").toAbsolutePath();
+		//Path packagesPath = Paths.get(currentPath.toString(), "target", "classes", "Dart", ".packages");
+
+		// Create a pubspec.yaml file. It should point to where to find package:antlr.
+		StringBuilder pubspec = new StringBuilder();
+		pubspec.append("name: antlr4_test\ndependencies:\n  antlr:\n    path: ");
+		pubspec.append(dartAntlrPath);
+		File pubspecFile = new File(overall_tmpdir, "pubspec.yaml");
+
+		try (PrintWriter out = new PrintWriter(pubspecFile.getAbsolutePath())) {
+			out.println(pubspec.toString());
+		} catch (Exception e) {
+			System.err.println("can't exec recognizer: writing pubspec.yaml failed");
+			e.printStackTrace(System.err);
+		}
+
+		// Next, run `pub get`.
+		String pubExecutable = locatePub();
+		try {
+			ProcessBuilder builder = new ProcessBuilder(pubExecutable, "get", "--no-precompile");
+			builder.directory(overall_tmpdir);
+			Process process = builder.start();
+			StreamVacuum stdoutVacuum = new StreamVacuum(process.getInputStream());
+			StreamVacuum stderrVacuum = new StreamVacuum(process.getErrorStream());
+			stdoutVacuum.start();
+			stderrVacuum.start();
+			process.waitFor();
+			stdoutVacuum.join();
+			stderrVacuum.join();
+			stdoutVacuum.toString();
+			if (stderrVacuum.toString().length() > 0) {
+				return this.stderrDuringParse = stderrVacuum.toString();
+			}
+		} catch (Exception e) {
+			System.err.println("can't exec recognizer: `pub get` failed");
+			e.printStackTrace(System.err);
+		}
 
 		String dartExecutable = locateDart();
 		String modulePath = new File(overall_tmpdir, fileName).getAbsolutePath();
 		String inputPath = new File(overall_tmpdir, "input").getAbsolutePath();
 		try {
-			ProcessBuilder builder = new ProcessBuilder(dartExecutable, "--packages=" + packagesPath.toString(), modulePath, inputPath);
+			//ProcessBuilder builder = new ProcessBuilder(dartExecutable, "--packages=" + packagesPath.toString(), modulePath, inputPath);
+			ProcessBuilder builder = new ProcessBuilder(dartExecutable, modulePath, inputPath);
 			builder.directory(overall_tmpdir);
 			Process process = builder.start();
 			StreamVacuum stdoutVacuum = new StreamVacuum(process.getInputStream());
@@ -144,8 +202,9 @@ public class BaseDartTest implements RuntimeTestSupport {
 				output = null;
 			}
 			if (stderrVacuum.toString().length() > 0) {
-				System.out.println("UHHHH: " + stderrVacuum.toString());
-				this.stderrDuringParse = stderrVacuum.toString();
+				// TODO (thosakwe): remove this print
+				System.out.println("Dart test error in " + overall_tmpdir + ": " + stderrVacuum.toString());
+				return this.stderrDuringParse = stderrVacuum.toString();
 			}
 			return output;
 		} catch (Exception e) {

@@ -66,7 +66,7 @@ abstract class AtnSimulator {
   static Atn deserialize(String data) =>
       new AtnDeserializer().deserialize(data);
 
-  static Atn deserializeBytes(Uint16List data) =>
+  static Atn deserializeBytes(List<int> data) =>
       new AtnDeserializer().deserializeBytes(data);
 }
 

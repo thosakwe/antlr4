@@ -147,8 +147,8 @@ T visit<lname; format="cap">(<lname; format="cap">Context context) => visitChild
 
 fileHeader(grammarFileName, ANTLRVersion) ::= <<
 // Generated from <grammarFileName; format="dart-escape"> by antlr4dart
-import 'dart:typed_data';
-import 'package:antlr/antlr.dart';
+<!import 'dart:typed_data';
+import 'package:antlr/antlr.dart';!>
 >>
 
 Parser(parser, funcs, atn,  sempredFuncs, superClass) ::= <<
@@ -156,6 +156,8 @@ Parser(parser, funcs, atn,  sempredFuncs, superClass) ::= <<
 >>
 
 Parser_(parser, funcs, atn, sempredFuncs, ctor, superClass) ::= <<
+import 'package:antlr/antlr.dart';
+
 <\n>class <parser.name> extends <superClass; null="Parser"> {
 
   static const int EOF = Token.EOF;
@@ -177,7 +179,8 @@ Parser_(parser, funcs, atn, sempredFuncs, ctor, superClass) ::= <<
   <namedActions.members>
   <parser:(ctor)()>
 
-  String get serializedAtn => _serializedAtn;
+	String get serializedAtn => new String.fromCharCodes(_serializedAtnBytes);
+  <!String get serializedAtn => _serializedAtn;!>
 
   String get grammarFileName => "<parser.grammarFileName; format="dart-escape">";
   <funcs>
@@ -676,8 +679,8 @@ void <if(method.isEnter)>enter<else>exit<endif>Rule(ParseTreeListener listener) 
 >>
 
 VisitorDispatchMethod(method) ::= <<
-T accept<T>(ParseTreeVisitor<T> visitor) {
-  if (visitor is <parser.grammarName>Visitor<T>) return visitor.visit<struct.derivedFromName; format="cap">(this);
+T accept\<T>(ParseTreeVisitor\<T> visitor) {
+  if (visitor is <parser.grammarName>Visitor\<T>) return visitor.visit<struct.derivedFromName; format="cap">(this);
   else return visitor.visitChildren(this);
 }
 >>
@@ -729,6 +732,8 @@ part of <lexerFile.genPackage>;
 >>
 
 Lexer(lexer, atn, actionFuncs, sempredFuncs, superClass) ::= <<
+import 'package:antlr/antlr.dart';
+
 class <lexer.name> extends <superClass; null="Lexer"> {
 
   static const int <lexer.tokens:{k | <k> = <lexer.tokens.(k)>}; separator=", ", wrap, anchor>;

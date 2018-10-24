@@ -247,15 +247,13 @@ class AtnDeserializer {
     int ndecisions = codes[p++];
     for (int i = 1; i <= ndecisions; i++) {
       var s = codes[p++];
+      var decState = atn.states[s];
 
-      for (int i = 0; i < atn.states.length; i++) {
-        print('$i => ${atn.states[i].runtimeType}');
+      // TODO (thosakwe): Not really sure why this should ever be false, but it IS, almost always.
+      if (decState is DecisionState) {
+        atn.decisionToState.add(decState);
+        decState.decision = i - 1;
       }
-
-      print('Hey: $s???');
-      var decState = atn.states[s] as DecisionState;
-      atn.decisionToState.add(decState);
-      decState.decision = i - 1;
     }
 
     // LEXER ACTIONS
