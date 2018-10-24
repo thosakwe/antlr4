@@ -1,6 +1,6 @@
+import '../token.dart';
 import '../util/interval_set.dart';
 import '../util/pair.dart';
-import '../token.dart';
 import 'atn.dart';
 import 'atn_states.dart';
 import 'atn_type.dart';
@@ -443,7 +443,7 @@ class AtnDeserializer {
     return s;
   }
 
-  static void _checkCondition(bool condition, [String message]) {
+  static void _checkCondition(bool condition, String message) {
     if (!condition) {
       throw new StateError(message);
     }
@@ -512,35 +512,55 @@ class AtnDeserializer {
     for (AtnState state in atn.states) {
       if (state == null) continue;
       _checkCondition(
-          state.onlyHasEpsilonTransitions || (state.numberOfTransitions <= 1));
+          state.onlyHasEpsilonTransitions || (state.numberOfTransitions <= 1),
+          'ATN state must have either only epsilon transitions, or 0 or 1 total transitions.');
       if (state is PlusBlockStartState)
-        _checkCondition(state.loopBackState != null);
+        _checkCondition(state.loopBackState != null,
+            'PlusBlockStartState cannot have a null loopBackState.');
       if (state is StarLoopEntryState) {
-        _checkCondition(state.loopBackState != null);
-        _checkCondition(state.numberOfTransitions == 2);
+        _checkCondition(state.loopBackState != null,
+            'StarLoopEntryState cannot have a null loopBackState.');
+        _checkCondition(state.numberOfTransitions == 2,
+            'StarLoopEntryState must have exactly 2 transitions.');
         if (state.getTransition(0).target is StarBlockStartState) {
-          _checkCondition(state.getTransition(1).target is LoopEndState);
-          _checkCondition(!state.nonGreedy);
+          _checkCondition(state.getTransition(1).target is LoopEndState,
+              'StarLoopEntryState must have a transition at index 1 whose target is a LoopEndState.');
+          _checkCondition(
+              !state.nonGreedy, 'StartLoopEntryState cannot be non-greedy.');
         } else if (state.getTransition(0).target is LoopEndState) {
-          _checkCondition(state.getTransition(1).target is StarBlockStartState);
-          _checkCondition(state.nonGreedy);
+          _checkCondition(state.getTransition(1).target is StarBlockStartState,
+              'StarLoopEntryState must have a transition at index 1 whose target is a StarBlockStartState.');
+          _checkCondition(
+              state.nonGreedy, 'StartLoopEntryState must be non-greedy.');
         } else {
           throw new StateError('');
         }
       }
       if (state is StarLoopbackState) {
-        _checkCondition(state.numberOfTransitions == 1);
-        _checkCondition(state.getTransition(0).target is StarLoopEntryState);
+        _checkCondition(state.numberOfTransitions == 1,
+            'StarLoopbackState must have exactly 1 transition.');
+        _checkCondition(state.getTransition(0).target is StarLoopEntryState,
+            'StarLoopbackEntryState must have a transition at index 0 whose target is a StarLoopEntryState.');
       }
-      if (state is LoopEndState) _checkCondition(state.loopBackState != null);
-      if (state is RuleStartState) _checkCondition(state.stopState != null);
-      if (state is BlockStartState) _checkCondition(state.endState != null);
-      if (state is BlockEndState) _checkCondition(state.startState != null);
+      if (state is LoopEndState)
+        _checkCondition(state.loopBackState != null,
+            'LoopEndState cannot have a null loopBackState.');
+      if (state is RuleStartState)
+        _checkCondition(state.stopState != null,
+            'RuleStartState cannot have a null stopState.');
+      if (state is BlockStartState)
+        _checkCondition(state.endState != null,
+            'BlockStartState cannot have a null endState.');
+      if (state is BlockEndState)
+        _checkCondition(state.startState != null,
+            'BlockEndState cannot have a null startState.');
       if (state is DecisionState) {
-        _checkCondition(state.numberOfTransitions <= 1 || state.decision >= 0);
+        _checkCondition(state.numberOfTransitions <= 1 || state.decision >= 0,
+            'DecisionState must have <= 1 transitions, OR have a decision >= 0.');
       } else {
         _checkCondition(
-            state.numberOfTransitions <= 1 || state is RuleStopState);
+            state.numberOfTransitions <= 1 || state is RuleStopState,
+            'DecisionState must have <= 1 transitions, OR be a RuleStopState.');
       }
     }
   }
