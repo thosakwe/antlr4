@@ -273,21 +273,6 @@ class AtnDeserializer {
           getUnicodeDeserializer(UnicodeDeserializingMode.UNICODE_SMP));
     }
 
-    /*
-    TODO (thosakwe): ?
-    int nsets = data[p++];
-    for (int i = 0; i < nsets; i++) {
-      int nintervals = data[p++];
-      IntervalSet set = new IntervalSet();
-      sets.add(set);
-      bool containsEof = data[p++] != 0;
-      if (containsEof) set.addSingle(-1);
-      for (int j = 0; j < nintervals; j++) {
-        set.add(data[p++], data[p++]);
-      }
-    }
-    */
-
     // EDGES
     int nedges = data[p++];
     for (int i = 0; i < nedges; i++) {
@@ -355,11 +340,8 @@ class AtnDeserializer {
       var s = data[p++];
       var decState = atn.states[s] as DecisionState;
 
-      // TODO (thosakwe): Not really sure why this should ever be false, but it IS, almost always.
-      //if (decState is DecisionState) {
       atn.decisionToState.add(decState);
       decState.decision = i - 1;
-      //}
     }
 
     // LEXER ACTIONS
@@ -581,15 +563,6 @@ class AtnDeserializer {
         "${_digits(leastSigBits >> 48, 4)}-"
         "${_digits(leastSigBits, 12)}";
     return uuid.toUpperCase();
-  }
-
-  static int _toInt32(List<int> data, [int offset = 0]) {
-    return data[offset] | (data[offset + 1] << 16);
-  }
-
-  static int _toLong(List<int> data, [int offset = 0]) {
-    var lowOrder = _toInt32(data, offset) & 0x00000000FFFFFFFF;
-    return lowOrder | (_toInt32(data, offset + 2) << 32);
   }
 
   // Analyze the StarLoopEntryState states in the specified ATN to set the

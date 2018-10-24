@@ -1,6 +1,5 @@
 import 'dart:collection';
 import 'dart:math';
-import 'dart:typed_data';
 import '../util/bit_set.dart';
 import '../util/double_key_map.dart';
 import '../util/interval.dart';
