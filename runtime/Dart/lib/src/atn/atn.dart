@@ -124,7 +124,7 @@ class Atn {
         context.invokingState >= 0 &&
         following.contains(Token.EPSILON)) {
       AtnState invokingState = states[context.invokingState];
-      RuleTransition rt = invokingState.getTransition(0);
+      RuleTransition rt = invokingState.transition(0);
       following = nextTokensInSameRule(rt.followState);
       expected
         ..addAll(following)

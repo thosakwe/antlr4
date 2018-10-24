@@ -35,7 +35,7 @@ class Ll1Analyzer {
       look[alt] = new IntervalSet();
       Set<AtnConfig> lookBusy = new HashSet<AtnConfig>();
       bool seeThruPreds = false; // fail to get lookahead upon pred
-      _look(state.getTransition(alt).target, null, PredictionContext.EMPTY,
+      _look(state.transition(alt).target, null, PredictionContext.EMPTY,
           look[alt], lookBusy, new BitSet(), seeThruPreds, false);
       // Wipe out lookahead for this alternative if we found nothing
       // or we had a predicate when we !seeThruPreds
@@ -148,7 +148,7 @@ class Ll1Analyzer {
     }
     int n = state.numberOfTransitions;
     for (int i = 0; i < n; i++) {
-      Transition transition = state.getTransition(i);
+      Transition transition = state.transition(i);
       if (transition.runtimeType == RuleTransition) {
         if (calledRuleStack.get(transition.target.ruleIndex)) continue;
         PredictionContext newContext = new SingletonPredictionContext.empty(

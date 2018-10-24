@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import '../token.dart';
 import '../util/interval_set.dart';
 import '../util/pair.dart';
@@ -43,6 +44,19 @@ class AtnDeserializationOptions {
   }
 }
 
+enum UnicodeDeserializingMode { UNICODE_BMP, UNICODE_SMP }
+
+class UnicodeDeserializer {
+  // Wrapper for readInt() or readInt32()
+  final int Function(List<int>, int) readUnicode;
+
+  // Work around Java not allowing mutation of captured variables
+  // by returning amount by which to increment p after each read
+  final int Function() size;
+
+  UnicodeDeserializer(this.readUnicode, this.size);
+}
+
 class AtnDeserializer {
   static const String _BASE_SERIALIZED_UUID =
       "33761B2D-78BB-4A43-8B0B-4F5BEE8AACF3";
@@ -71,103 +85,165 @@ class AtnDeserializer {
             ? deserializationOptions
             : AtnDeserializationOptions.defaultOptions;
 
+  static UnicodeDeserializer getUnicodeDeserializer(
+      UnicodeDeserializingMode mode) {
+    if (mode == UnicodeDeserializingMode.UNICODE_BMP) {
+      int readUnicode(List<int> data, int p) {
+        return data[p];
+      }
+
+      int size() {
+        return 1;
+      }
+
+      return new UnicodeDeserializer(readUnicode, size);
+    } else {
+      int readUnicode(List<int> data, int p) {
+        return data[p] | data[p + 1] << 16;
+        //return toInt32(data, p);
+      }
+
+      int size() {
+        return 2;
+      }
+
+      return new UnicodeDeserializer(readUnicode, size);
+    }
+  }
+
+  int deserializeSets(List<int> data, int p, List<IntervalSet> sets,
+      UnicodeDeserializer unicodeDeserializer) {
+    int nsets = data[p++];
+    for (int i = 0; i < nsets; i++) {
+      int nintervals = data[p];
+      p++;
+      var set = new IntervalSet();
+      sets.add(set);
+
+      var containsEof = data[p++] != 0;
+      if (containsEof) {
+        set.add(-1, -1);
+      }
+
+      for (int j = 0; j < nintervals; j++) {
+        int a = unicodeDeserializer.readUnicode(data, p);
+        p += unicodeDeserializer.size();
+        int b = unicodeDeserializer.readUnicode(data, p);
+        p += unicodeDeserializer.size();
+        set.add(a, b);
+      }
+    }
+    return p;
+  }
+
   Atn deserialize(String data) => deserializeBytes(data.codeUnits);
 
-  Atn deserializeBytes(List<int> data) {
-    //var iterator = data.codeUnits.skip(1).iterator;
-    //List<int> codes = new List<int>();
-    //iterator.moveNext();
-    //while (iterator.moveNext()) codes.add(iterator.current - 2);
-    var codes = data.toList();
+  Atn deserializeBytes(List<int> data_) {
+    var data = new Uint16List.fromList(data_);
 
-    for (int i = 1; i < codes.length; i++) {
-      codes[i] = (codes[i] - 2);
+    for (int i = 1; i < data.length; i++) {
+      data[i] = (data[i] - 2);
     }
 
     int p = 0;
-    int version = codes[p++]; // + 2;
+    int version = data[p++];
     if (version != SERIALIZED_VERSION) {
       throw new UnsupportedError("Could not deserialize ATN "
           "with version $version (expected $SERIALIZED_VERSION).");
     }
-    String uuid = _toUuid(codes.getRange(p, p + 8).toList());
+    var uuid = _toUuid(data.getRange(p, p + 8).toList());
     p += 8;
     if (!_SUPPORTED_UUIDS.contains(uuid)) {
       throw new UnsupportedError("Could not deserialize ATN "
           "with UUID $uuid (expected $SERIALIZED_UUID or a legacy UUID).");
     }
-    bool supPrecPreds =
+    bool supportsPrecedencePredicates =
         _isFeatureSupported(_ADDED_PRECEDENCE_TRANSITIONS, uuid);
     bool supportsLexerActions = _isFeatureSupported(_ADDED_LEXER_ACTIONS, uuid);
-    AtnType grammarType = AtnType.values[codes[p++]];
-    int maxTokenType = codes[p++];
+    AtnType grammarType = AtnType.values[data[p++]];
+    int maxTokenType = data[p++];
     Atn atn = new Atn(grammarType, maxTokenType);
 
     // STATES
     var loopBackStateNumbers = new List<Pair<LoopEndState, int>>();
     var endStateNumbers = new List<Pair<BlockStartState, int>>();
-    int nstates = codes[p++];
+    int nstates = data[p++];
     for (int i = 0; i < nstates; i++) {
-      int stype = codes[p++];
+      int stype = data[p++];
       // ignore bad type of states
       if (stype == AtnState.INVALID_TYPE) {
         atn.addState(null);
         continue;
       }
-      var ruleIndex = codes[p++];
-      AtnState state = _stateFactory(stype, ruleIndex);
+      var ruleIndex = data[p++];
+      if (ruleIndex == 0xFFFF) {
+        ruleIndex = -1;
+      }
+
+      AtnState s = _stateFactory(stype, ruleIndex);
       if (stype == AtnState.LOOP_END) {
         // special case
-        int loopBackStateNumber = codes[p++];
+        int loopBackStateNumber = data[p++];
         loopBackStateNumbers.add(new Pair<LoopEndState, int>(
-            state as LoopEndState, loopBackStateNumber));
-      } else if (state is BlockStartState) {
-        int endStateNumber = codes[p++];
-        endStateNumbers
-            .add(new Pair<BlockStartState, int>(state, endStateNumber));
+            s as LoopEndState, loopBackStateNumber));
+      } else if (s is BlockStartState) {
+        int endStateNumber = data[p++];
+        endStateNumbers.add(new Pair<BlockStartState, int>(s, endStateNumber));
       }
-      atn.addState(state);
+      atn.addState(s);
     }
 
     // delay the assignment of loop back and end states until we
     // know all the state instances have been initialized
-    loopBackStateNumbers.forEach((p) => p.a.loopBackState = atn.states[p.b]);
-    endStateNumbers
-        .forEach((p) => p.a.endState = atn.states[p.b] as BlockEndState);
-    int numNonGreedyStates = codes[p++];
+    for (var pair in loopBackStateNumbers) {
+      pair.a.loopBackState = atn.states[pair.b];
+    }
+
+    for (var pair in endStateNumbers) {
+      pair.a.endState = atn.states[pair.b] as BlockEndState;
+    }
+
+    int numNonGreedyStates = data[p++];
     for (int i = 0; i < numNonGreedyStates; i++) {
-      int stateNumber = codes[p++];
+      int stateNumber = data[p++];
       (atn.states[stateNumber] as DecisionState).nonGreedy = true;
     }
-    if (supPrecPreds) {
-      int numPrecedenceStates = codes[p++];
+
+    if (supportsPrecedencePredicates) {
+      int numPrecedenceStates = data[p++];
       for (int i = 0; i < numPrecedenceStates; i++) {
-        int stateNumber = codes[p++];
-        (atn.states[stateNumber] as RuleStartState).isPrecedenceRule = true;
+        int stateNumber = data[p++];
+        (atn.states[stateNumber] as RuleStartState).isLeftRecursiveRule = true;
       }
     }
 
     // RULES
-    int nrules = codes[p++];
+    int nrules = data[p++];
     if (atn.grammarType == AtnType.LEXER) {
       atn.ruleToTokenType = new List<int>(nrules);
     }
+
     atn.ruleToStartState = new List<RuleStartState>(nrules);
     for (int i = 0; i < nrules; i++) {
-      int s = codes[p++];
+      int s = data[p++];
       RuleStartState startState = atn.states[s];
       atn.ruleToStartState[i] = startState;
       if (atn.grammarType == AtnType.LEXER) {
-        int tokenType = codes[p++];
+        int tokenType = data[p++];
+        if (tokenType == 0xFFFF) {
+          tokenType = Token.EOF;
+        }
+
         atn.ruleToTokenType[i] = tokenType;
         if (!_isFeatureSupported(_ADDED_LEXER_ACTIONS, uuid)) {
           // this piece of unused metadata was serialized prior to the
           // addition of LexerAction
-          p++;
-          int actionIndexIgnored = codes[p++];
+          // ignore: unused_local_variable
+          int actionIndexIgnored = data[p++];
         }
       }
     }
+
     atn.ruleToStopState = new List<RuleStopState>(nrules);
     for (AtnState state in atn.states) {
       if (state is RuleStopState) {
@@ -177,48 +253,78 @@ class AtnDeserializer {
       }
     }
     // MODES
-    int nmodes = codes[p++];
+    int nmodes = data[p++];
     for (int i = 0; i < nmodes; i++) {
-      var t = atn.states[codes[p++]];
-      atn.modeToStartState.add(t as TokensStartState);
+      var s = atn.states[data[p++]];
+      atn.modeToStartState.add(s as TokensStartState);
     }
 
     // SETS
     List<IntervalSet> sets = new List<IntervalSet>();
-    int nsets = codes[p++];
-    for (int i = 0; i < nsets; i++) {
-      int nintervals = codes[p++];
-      IntervalSet set = new IntervalSet();
-      sets.add(set);
-      bool containsEof = codes[p++] != 0;
-      if (containsEof) set.addSingle(-1);
-      for (int j = 0; j < nintervals; j++) {
-        set.add(codes[p++], codes[p++]);
-      }
+
+    // First, read all sets with 16-bit Unicode code points <= U+FFFF.
+    p = deserializeSets(data, p, sets,
+        getUnicodeDeserializer(UnicodeDeserializingMode.UNICODE_BMP));
+
+    // Next, if the ATN was serialized with the Unicode SMP feature,
+    // deserialize sets with 32-bit arguments <= U+10FFFF.
+    if (_isFeatureSupported(_ADDED_UNICODE_SMP, uuid)) {
+      p = deserializeSets(data, p, sets,
+          getUnicodeDeserializer(UnicodeDeserializingMode.UNICODE_SMP));
     }
 
-    // EDGES
-    int nedges = codes[p++];
-    for (int i = 0; i < nedges; i++) {
-      int src = codes[p++];
-      int trg = codes[p++];
-      int ttype = codes[p++];
-      int arg1 = codes[p++];
-      int arg2 = codes[p++];
-      int arg3 = codes[p++];
-      var trans = _edgeFactory(atn, ttype, src, trg, arg1, arg2, arg3, sets);
-      atn.states[src].addTransition(trans);
-      //AtnState srcState = atn.states[src]..addTransition(trans);
+    /*
+    TODO (thosakwe): ?
+    int nsets = data[p++];
+    for (int i = 0; i < nsets; i++) {
+      int nintervals = data[p++];
+      IntervalSet set = new IntervalSet();
+      sets.add(set);
+      bool containsEof = data[p++] != 0;
+      if (containsEof) set.addSingle(-1);
+      for (int j = 0; j < nintervals; j++) {
+        set.add(data[p++], data[p++]);
+      }
     }
+    */
+
+    // EDGES
+    int nedges = data[p++];
+    for (int i = 0; i < nedges; i++) {
+      int src = data[p];
+      int trg = data[p + 1];
+      int ttype = data[p + 2];
+      int arg1 = data[p + 3];
+      int arg2 = data[p + 4];
+      int arg3 = data[p + 5];
+      var trans = _edgeFactory(atn, ttype, src, trg, arg1, arg2, arg3, sets);
+      var srcState = atn.states[src];
+      srcState.addTransition(trans);
+      p += 6;
+    }
+
     // edges for rule stop states can be derived, so they aren't serialized
     for (AtnState state in atn.states) {
       for (int i = 0; i < state.numberOfTransitions; i++) {
-        Transition t = state.getTransition(i);
+        Transition t = state.transition(i);
         if (t is! RuleTransition) continue;
-        atn.ruleToStopState[t.target.ruleIndex].addTransition(
-            new EpsilonTransition((t as RuleTransition).followState));
+
+        var ruleTransition = t as RuleTransition;
+        int outermostPrecedenceReturn = -1;
+        if (atn.ruleToStartState[ruleTransition.target.ruleIndex]
+            .isLeftRecursiveRule) {
+          if (ruleTransition.precedence == 0) {
+            outermostPrecedenceReturn = ruleTransition.target.ruleIndex;
+          }
+        }
+
+        EpsilonTransition returnTransition = new EpsilonTransition(
+            ruleTransition.followState, outermostPrecedenceReturn);
+        atn.ruleToStopState[ruleTransition.target.ruleIndex]
+            .addTransition(returnTransition);
       }
     }
+
     for (AtnState state in atn.states) {
       if (state is BlockStartState) {
         // we need to know the end state to set its start state
@@ -233,37 +339,46 @@ class AtnDeserializer {
       }
       if (state is PlusLoopbackState) {
         for (int i = 0; i < state.numberOfTransitions; i++) {
-          AtnState target = state.getTransition(i).target;
+          AtnState target = state.transition(i).target;
           if (target is PlusBlockStartState) target.loopBackState = state;
         }
       } else if (state is StarLoopbackState) {
         for (int i = 0; i < state.numberOfTransitions; i++) {
-          AtnState target = state.getTransition(i).target;
+          AtnState target = state.transition(i).target;
           if (target is StarLoopEntryState) target.loopBackState = state;
         }
       }
     }
     // DECISIONS
-    int ndecisions = codes[p++];
+    int ndecisions = data[p++];
     for (int i = 1; i <= ndecisions; i++) {
-      var s = codes[p++];
-      var decState = atn.states[s];
+      var s = data[p++];
+      var decState = atn.states[s] as DecisionState;
 
       // TODO (thosakwe): Not really sure why this should ever be false, but it IS, almost always.
-      if (decState is DecisionState) {
-        atn.decisionToState.add(decState);
-        decState.decision = i - 1;
-      }
+      //if (decState is DecisionState) {
+      atn.decisionToState.add(decState);
+      decState.decision = i - 1;
+      //}
     }
 
     // LEXER ACTIONS
     if (atn.grammarType == AtnType.LEXER) {
       if (supportsLexerActions) {
-        atn.lexerActions = new List<LexerAction>(codes[p++]);
+        atn.lexerActions = new List<LexerAction>(data[p++]);
         for (int i = 0; i < atn.lexerActions.length; i++) {
-          LexerActionType actionType = LexerActionType.values[codes[p++]];
-          atn.lexerActions[i] =
-              _lexerActionFactory(actionType, codes[p++], codes[p++]);
+          LexerActionType actionType = LexerActionType.values[data[p++]];
+          var data1 = data[p++];
+          if (data1 == 0xFFFF) {
+            data1 = -1;
+          }
+
+          var data2 = data[p++];
+          if (data2 == 0xFFFF) {
+            data2 = -1;
+          }
+
+          atn.lexerActions[i] = _lexerActionFactory(actionType, data1, data2);
         }
       } else {
         // for compatibility with older serialized ATNs, convert the old
@@ -272,7 +387,7 @@ class AtnDeserializer {
         List<LexerAction> legacyLexerActions = new List<LexerAction>();
         for (AtnState state in atn.states) {
           for (int i = 0; i < state.numberOfTransitions; i++) {
-            Transition transition = state.getTransition(i);
+            Transition transition = state.transition(i);
             if (transition is! ActionTransition) continue;
             int ruleIndex = (transition as ActionTransition).ruleIndex;
             int actionIndex = (transition as ActionTransition).actionIndex;
@@ -301,25 +416,29 @@ class AtnDeserializer {
         BasicBlockStartState bypassStart = new BasicBlockStartState();
         bypassStart.ruleIndex = i;
         atn.addState(bypassStart);
+
         BlockEndState bypassStop = new BlockEndState();
         bypassStop.ruleIndex = i;
         atn.addState(bypassStop);
+
         bypassStart.endState = bypassStop;
         atn.defineDecisionState(bypassStart);
+
         bypassStop.startState = bypassStart;
+
         AtnState endState;
         Transition excludeTransition = null;
-        if (atn.ruleToStartState[i].isPrecedenceRule) {
+        if (atn.ruleToStartState[i].isLeftRecursiveRule) {
           // wrap from the beginning of the rule to the StarLoopEntryState
           endState = null;
           for (AtnState state in atn.states) {
             if (state.ruleIndex != i) continue;
             if (state is! StarLoopEntryState) continue;
             AtnState maybeLoopEndState =
-                state.getTransition(state.numberOfTransitions - 1).target;
+                state.transition(state.numberOfTransitions - 1).target;
             if (maybeLoopEndState is! LoopEndState) continue;
             if (maybeLoopEndState.epsilonOnlyTransitions &&
-                maybeLoopEndState.getTransition(0).target is RuleStopState) {
+                maybeLoopEndState.transition(0).target is RuleStopState) {
               endState = state;
               break;
             }
@@ -329,7 +448,7 @@ class AtnDeserializer {
                 "identify final state of the precedence rule prefix section.");
           }
           excludeTransition =
-              (endState as StarLoopEntryState).loopBackState.getTransition(0);
+              (endState as StarLoopEntryState).loopBackState.transition(0);
         } else {
           endState = atn.ruleToStopState[i];
         }
@@ -450,6 +569,10 @@ class AtnDeserializer {
   }
 
   static String _toUuid(List<int> data) {
+    //print(data);
+    //var leastSigBits = _toLong(data);
+    //var mostSigBits = _toLong(data, 4);
+
     BigInt leastSigBits = _toInt(data);
     BigInt mostSigBits = _toInt(data, 4);
     String uuid = "${_digits(mostSigBits >> 32, 8)}-"
@@ -458,6 +581,15 @@ class AtnDeserializer {
         "${_digits(leastSigBits >> 48, 4)}-"
         "${_digits(leastSigBits, 12)}";
     return uuid.toUpperCase();
+  }
+
+  static int _toInt32(List<int> data, [int offset = 0]) {
+    return data[offset] | (data[offset + 1] << 16);
+  }
+
+  static int _toLong(List<int> data, [int offset = 0]) {
+    var lowOrder = _toInt32(data, offset) & 0x00000000FFFFFFFF;
+    return lowOrder | (_toInt32(data, offset + 2) << 32);
   }
 
   // Analyze the StarLoopEntryState states in the specified ATN to set the
@@ -470,12 +602,12 @@ class AtnDeserializer {
       // We analyze the ATN to determine if this ATN decision state is the
       // decision for the closure block that determines whether a
       // precedence rule should continue or complete.
-      if (atn.ruleToStartState[state.ruleIndex].isPrecedenceRule) {
+      if (atn.ruleToStartState[state.ruleIndex].isLeftRecursiveRule) {
         AtnState maybeLoopEndState =
-            state.getTransition(state.numberOfTransitions - 1).target;
+            state.transition(state.numberOfTransitions - 1).target;
         if (maybeLoopEndState is LoopEndState) {
           if (maybeLoopEndState.epsilonOnlyTransitions &&
-              maybeLoopEndState.getTransition(0).target is RuleStopState) {
+              maybeLoopEndState.transition(0).target is RuleStopState) {
             (state as StarLoopEntryState).precedenceRuleDecision = true;
           }
         }
@@ -522,13 +654,13 @@ class AtnDeserializer {
             'StarLoopEntryState cannot have a null loopBackState.');
         _checkCondition(state.numberOfTransitions == 2,
             'StarLoopEntryState must have exactly 2 transitions.');
-        if (state.getTransition(0).target is StarBlockStartState) {
-          _checkCondition(state.getTransition(1).target is LoopEndState,
+        if (state.transition(0).target is StarBlockStartState) {
+          _checkCondition(state.transition(1).target is LoopEndState,
               'StarLoopEntryState must have a transition at index 1 whose target is a LoopEndState.');
           _checkCondition(
               !state.nonGreedy, 'StartLoopEntryState cannot be non-greedy.');
-        } else if (state.getTransition(0).target is LoopEndState) {
-          _checkCondition(state.getTransition(1).target is StarBlockStartState,
+        } else if (state.transition(0).target is LoopEndState) {
+          _checkCondition(state.transition(1).target is StarBlockStartState,
               'StarLoopEntryState must have a transition at index 1 whose target is a StarBlockStartState.');
           _checkCondition(
               state.nonGreedy, 'StartLoopEntryState must be non-greedy.');
@@ -539,7 +671,7 @@ class AtnDeserializer {
       if (state is StarLoopbackState) {
         _checkCondition(state.numberOfTransitions == 1,
             'StarLoopbackState must have exactly 1 transition.');
-        _checkCondition(state.getTransition(0).target is StarLoopEntryState,
+        _checkCondition(state.transition(0).target is StarLoopEntryState,
             'StarLoopbackEntryState must have a transition at index 0 whose target is a StarLoopEntryState.');
       }
       if (state is LoopEndState)
@@ -555,12 +687,15 @@ class AtnDeserializer {
         _checkCondition(state.startState != null,
             'BlockEndState cannot have a null startState.');
       if (state is DecisionState) {
-        _checkCondition(state.numberOfTransitions <= 1 || state.decision >= 0,
-            'DecisionState must have <= 1 transitions, OR have a decision >= 0.');
+        _checkCondition(
+            state.numberOfTransitions <= 1 || state.decision >= 0,
+            'DecisionState must have <= 1 transitions, OR have a decision >= 0.\n' +
+                'numberOfTransitions was ${state.numberOfTransitions}, decision was ${state.decision}.');
       } else {
         _checkCondition(
             state.numberOfTransitions <= 1 || state is RuleStopState,
-            'DecisionState must have <= 1 transitions, OR be a RuleStopState.');
+            'AtnState must have <= 1 transitions, OR be a RuleStopState.' +
+                'numberOfTransitions was ${state.numberOfTransitions}.');
       }
     }
   }
@@ -579,6 +714,14 @@ class AtnDeserializer {
     String hex = ((left | paramLong & left - BigInt.one)).toRadixString(16);
     return hex.substring(hex.length - paramInt);
   }
+
+  /*
+  static String _digits(int paramLong, int paramInt) {
+    var left = 1 << paramInt * 4;
+    String hex = ((left | paramLong & left - 1)).toRadixString(16);
+    return hex.substring(hex.length - paramInt);
+  }
+  */
 
   // Determines if a particular serialized representation of an ATN supports
   // a particular feature, identified by the uuid used for serializing

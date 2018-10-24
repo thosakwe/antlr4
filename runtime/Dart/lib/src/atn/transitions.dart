@@ -230,7 +230,10 @@ class AtomTransition extends Transition {
 }
 
 class EpsilonTransition extends Transition {
-  EpsilonTransition(AtnState target) : super._internal(target);
+  final int outermostPrecedenceReturn;
+
+  EpsilonTransition(AtnState target, [this.outermostPrecedenceReturn = -1])
+      : super._internal(target);
 
   int get serializationType => Transition.EPSILON;
 

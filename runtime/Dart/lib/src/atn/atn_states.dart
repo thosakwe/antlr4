@@ -85,7 +85,7 @@ abstract class AtnState {
     }
   }
 
-  Transition getTransition(int i) => _transitions[i];
+  Transition transition(int i) => _transitions[i];
 
   void setTransition(int i, Transition e) {
     transitions[i] = e;
@@ -116,6 +116,13 @@ abstract class BlockStartState extends DecisionState {
 abstract class DecisionState extends AtnState {
   int decision = -1;
   bool nonGreedy = false;
+
+  /*
+  @override
+  void addTransition(Transition e) {
+    if (numberOfTransitions < 1) super.addTransition(e);
+  }
+  */
 }
 
 /// Mark the end of a * or + loop.
@@ -141,7 +148,7 @@ class PlusLoopbackState extends DecisionState {
 
 class RuleStartState extends AtnState {
   RuleStopState stopState;
-  bool isPrecedenceRule = false;
+  bool isLeftRecursiveRule = false;
   int get stateType => AtnState.RULE_START;
 }
 
@@ -151,6 +158,11 @@ class RuleStartState extends AtnState {
 /// error handling.
 class RuleStopState extends AtnState {
   int get stateType => AtnState.RULE_STOP;
+
+  @override
+  void addTransition(Transition e) {
+    addTransitionAt(e);
+  }
 }
 
 /// The block that begins a closure loop.
@@ -161,7 +173,7 @@ class StarBlockStartState extends BlockStartState {
 class StarLoopbackState extends AtnState {
   int get stateType => AtnState.STAR_LOOP_BACK;
   StarLoopEntryState get loopEntryState =>
-      getTransition(0).target as StarLoopEntryState;
+      transition(0).target as StarLoopEntryState;
 }
 
 class StarLoopEntryState extends DecisionState {

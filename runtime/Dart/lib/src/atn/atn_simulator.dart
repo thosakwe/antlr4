@@ -755,7 +755,7 @@ class ParserAtnSimulator extends AtnSimulator {
       int n = c.state.numberOfTransitions;
       for (int ti = 0; ti < n; ti++) {
         // for each transition
-        Transition trans = c.state.getTransition(ti);
+        Transition trans = c.state.transition(ti);
         AtnState target = _getReachableTarget(trans, t);
         if (target != null) {
           intermediate.add(new AtnConfig.from(c, state: target), _mergeCache);
@@ -876,7 +876,7 @@ class ParserAtnSimulator extends AtnSimulator {
     var initialContext = new PredictionContext.fromRuleContext(atn, ctx);
     AtnConfigSet configs = new AtnConfigSet(fullCtx);
     for (int i = 0; i < p.numberOfTransitions; i++) {
-      AtnState target = p.getTransition(i).target;
+      AtnState target = p.transition(i).target;
       AtnConfig c = new AtnConfig(target, i + 1, initialContext);
       Set<AtnConfig> closureBusy = new HashSet<AtnConfig>();
       _closure(c, configs, closureBusy, true, fullCtx, false);
@@ -1053,7 +1053,7 @@ class ParserAtnSimulator extends AtnSimulator {
     // optimization
     if (!p.onlyHasEpsilonTransitions) configs.add(config, _mergeCache);
     for (int i = 0; i < p.numberOfTransitions; i++) {
-      Transition t = p.getTransition(i);
+      Transition t = p.transition(i);
       bool continueCollecting = (t is! ActionTransition) && collectPredicates;
       AtnConfig c = _getEpsilonTarget(config, t, continueCollecting, depth == 0,
           fullCtx, treatEofAsEpsilon);
@@ -1564,7 +1564,7 @@ class LexerAtnSimulator extends AtnSimulator {
       }
       int n = c.state.numberOfTransitions;
       for (int ti = 0; ti < n; ti++) {
-        Transition trans = c.state.getTransition(ti);
+        Transition trans = c.state.transition(ti);
         AtnState target = _getReachableTarget(trans, token);
         if (target != null) {
           var executor = (c as LexerAtnConfig).lexerActionExecutor;
@@ -1613,7 +1613,7 @@ class LexerAtnSimulator extends AtnSimulator {
     PredictionContext initialContext = PredictionContext.EMPTY;
     AtnConfigSet configs = new AtnConfigSet();
     for (int i = 0; i < state.numberOfTransitions; i++) {
-      AtnState target = state.getTransition(i).target;
+      AtnState target = state.transition(i).target;
       LexerAtnConfig c = new LexerAtnConfig(target, i + 1, initialContext);
       _closure(input, c, configs, false, false, false);
     }
@@ -1669,7 +1669,7 @@ class LexerAtnSimulator extends AtnSimulator {
     }
     AtnState p = config.state;
     for (int i = 0; i < p.numberOfTransitions; i++) {
-      Transition t = p.getTransition(i);
+      Transition t = p.transition(i);
       LexerAtnConfig c = _getEpsilonTarget(
           input, config, t, configs, speculative, treatEofAsEpsilon);
       if (c != null) {

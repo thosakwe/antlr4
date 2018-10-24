@@ -92,7 +92,7 @@ class ParserInterpreter extends Parser {
     RuleStartState startRuleStartState = atn.ruleToStartState[startRuleIndex];
     var rootContext = new InterpreterRuleContext(
         null, AtnState.INVALID_STATE_NUMBER, startRuleIndex);
-    if (startRuleStartState.isPrecedenceRule) {
+    if (startRuleStartState.isLeftRecursiveRule) {
       enterRecursionRule(
           rootContext, startRuleStartState.stateNumber, startRuleIndex, 0);
     } else {
@@ -104,7 +104,7 @@ class ParserInterpreter extends Parser {
         case AtnState.RULE_STOP:
           // pop; return from rule
           if (context.isEmpty) {
-            if (startRuleStartState.isPrecedenceRule) {
+            if (startRuleStartState.isLeftRecursiveRule) {
               ParserRuleContext result = context;
               var parentContext = parentContextStack.removeLast();
               unrollRecursionContexts(parentContext.a);
@@ -140,7 +140,7 @@ class ParserInterpreter extends Parser {
     } else {
       edge = 1;
     }
-    var transition = antState.getTransition(edge - 1);
+    var transition = antState.transition(edge - 1);
     switch (transition.serializationType) {
       case Transition.EPSILON:
         if (pushRecursionContextStates.get(antState.stateNumber) &&
@@ -173,7 +173,7 @@ class ParserInterpreter extends Parser {
         int ruleIndex = ruleStartState.ruleIndex;
         var ctx = new InterpreterRuleContext(
             context, antState.stateNumber, ruleIndex);
-        if (ruleStartState.isPrecedenceRule) {
+        if (ruleStartState.isLeftRecursiveRule) {
           enterRecursionRule(ctx, ruleStartState.stateNumber, ruleIndex,
               (transition as RuleTransition).precedence);
         } else {
@@ -207,14 +207,14 @@ class ParserInterpreter extends Parser {
 
   void _visitRuleStopState(AtnState p) {
     RuleStartState ruleStartState = atn.ruleToStartState[p.ruleIndex];
-    if (ruleStartState.isPrecedenceRule) {
+    if (ruleStartState.isLeftRecursiveRule) {
       var parentContext = parentContextStack.removeLast();
       unrollRecursionContexts(parentContext.a);
       state = parentContext.b;
     } else {
       exitRule();
     }
-    RuleTransition ruleTransition = atn.states[state].getTransition(0);
+    RuleTransition ruleTransition = atn.states[state].transition(0);
     state = ruleTransition.followState.stateNumber;
   }
 }

@@ -94,13 +94,13 @@ class FailedPredicateException extends RecognitionException {
 
   static int _predicateIndex(Parser recognizer) {
     AtnState atnState = recognizer.interpreter.atn.states[recognizer.state];
-    AbstractPredicateTransition transition = atnState.getTransition(0);
+    AbstractPredicateTransition transition = atnState.transition(0);
     return (transition is PredicateTransition) ? transition.predIndex : 0;
   }
 
   static int _ruleIndex(Parser recognizer) {
     AtnState atnState = recognizer.interpreter.atn.states[recognizer.state];
-    AbstractPredicateTransition transition = atnState.getTransition(0);
+    AbstractPredicateTransition transition = atnState.transition(0);
     return (transition is PredicateTransition) ? transition.ruleIndex : 0;
   }
 
