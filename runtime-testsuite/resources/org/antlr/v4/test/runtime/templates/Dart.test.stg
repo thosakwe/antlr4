@@ -58,7 +58,7 @@ Text() ::= "this.text"
 
 ValEquals(a,b) ::= <%<a>==<b>%>
 
-TextEquals(a) ::= <%this.text == ("<a>"%>
+TextEquals(a) ::= <%this.text == "<a>"%>
 
 PlusText(a) ::= <%"<a>" + this.text%>
 
@@ -68,7 +68,7 @@ LTEquals(i, v) ::= <%this._input.LT(<i>).text == <v>%>
 
 LANotEquals(i, v) ::= <%this._input.LA(<i>)!=<v>%>
 
-TokenStartColumnEquals(i) ::= <%this._tokenStartCharPositionInLine==<i>%>
+TokenStartColumnEquals(i) ::= <%tokenStartCharPositionInLine==<i>%>
 
 ImportListener(X) ::= ""
 
@@ -130,9 +130,9 @@ bool handleAcceptPositionForIdentifier() {
 		identifierLength++;
 	}
 
-	if (inputStream.index() > _tokenStartCharIndex + identifierLength) {
+	if (inputStream.index() > tokenStartCharIndex + identifierLength) {
 		int offset = identifierLength - 1;
-		interpreter.resetAcceptPosition(inputStream, _tokenStartCharIndex + offset, _tokenStartLine, _tokenStartCharPositionInLine + offset);
+		interpreter.resetAcceptPosition(inputStream, tokenStartCharIndex + offset, _tokenStartLine, _tokenStartCharPositionInLine + offset);
 		return true;
 	}
 
@@ -140,9 +140,9 @@ bool handleAcceptPositionForIdentifier() {
 }
 
 bool handleAcceptPositionForKeyword(String keyword) {
-	if (inputStream.index() > _tokenStartCharIndex + keyword.length()) {
+	if (inputStream.index() > tokenStartCharIndex + keyword.length()) {
 		int offset = keyword.length() - 1;
-		interpreter.resetAcceptPosition(inputStream, _tokenStartCharIndex + offset, _tokenStartLine, _tokenStartCharPositionInLine + offset);
+		interpreter.resetAcceptPosition(inputStream, tokenStartCharIndex + offset, _tokenStartLine, _tokenStartCharPositionInLine + offset);
 		return true;
 	}
 

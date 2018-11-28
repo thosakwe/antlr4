@@ -233,7 +233,7 @@ public class BaseDartTest implements RuntimeTestSupport {
 						+ "  var contents = await new File(args[0]).readAsString();\n"
 						+ "  var input = new ANTLRInputStream(contents);\n"
 						+ "  var lexer = new <lexerName>(input);\n"
-						+ "  var stream = new CommonTokenStream(lexer);\n"
+						+ "  var stream = new CommonTokenStream(lexer)..fill();\n"
 						+ "  for (var token in stream.tokens) {\n"
 						+ "    print(token.text);\n"
 						+ "  }\n"
