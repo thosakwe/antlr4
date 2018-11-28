@@ -40,7 +40,7 @@ ModMemberEquals(n,m,v) ::= <%this.<n> % <m> == <v>%>
 
 ModMemberNotEquals(n,m,v) ::= <%this.<n> % <m> != <v>%>
 
-DumpDFA() ::= "this.dumpDFA();"
+DumpDfa() ::= "this.dumpDfa();"
 
 Pass() ::= ""
 
@@ -58,13 +58,13 @@ Text() ::= "this.text"
 
 ValEquals(a,b) ::= <%<a>==<b>%>
 
-TextEquals(a) ::= <%this.text.equals("<a>")%>
+TextEquals(a) ::= <%this.text == ("<a>"%>
 
 PlusText(a) ::= <%"<a>" + this.text%>
 
 InputText() ::= "this._input.text"
 
-LTEquals(i, v) ::= <%this._input.LT(<i>).text.equals(<v>)%>
+LTEquals(i, v) ::= <%this._input.LT(<i>).text == <v>%>
 
 LANotEquals(i, v) ::= <%this._input.LA(<i>)!=<v>%>
 
@@ -86,7 +86,7 @@ Result(r) ::= <%<r>%>
 
 ParserPropertyMember() ::= <<
 @members {
-boolean Property() {
+bool Property() {
   return true;
 }
 }
@@ -98,8 +98,8 @@ PositionAdjustingLexer() ::= <<
 
 @override
  Token nextToken() {
-	if (!(_interp instanceof PositionAdjustingLexerATNSimulator)) {
-		_interp = new PositionAdjustingLexerATNSimulator(this, _ATN, _decisionToDFA, _sharedContextCache);
+	if (!(_interp is PositionAdjustingLexerAtnSimulator)) {
+		_interp = new PositionAdjustingLexerAtnSimulator(this, _Atn, _decisionToDfa, _sharedContextCache);
 	}
 
 	return super.nextToken();
@@ -123,7 +123,7 @@ PositionAdjustingLexer() ::= <<
 	return super.emit();
 }
 
-private boolean handleAcceptPositionForIdentifier() {
+bool handleAcceptPositionForIdentifier() {
 	String tokenText = text;
 	int identifierLength = 0;
 	while (identifierLength \< tokenText.length() && isIdentifierChar(tokenText.charAt(identifierLength))) {
@@ -139,7 +139,7 @@ private boolean handleAcceptPositionForIdentifier() {
 	return false;
 }
 
-private boolean handleAcceptPositionForKeyword(String keyword) {
+bool handleAcceptPositionForKeyword(String keyword) {
 	if (inputStream.index() > _tokenStartCharIndex + keyword.length()) {
 		int offset = keyword.length() - 1;
 		interpreter.resetAcceptPosition(inputStream, _tokenStartCharIndex + offset, _tokenStartLine, _tokenStartCharPositionInLine + offset);
@@ -150,21 +150,21 @@ private boolean handleAcceptPositionForKeyword(String keyword) {
 }
 
 @override
- PositionAdjustingLexerATNSimulator interpreter {
-	return (PositionAdjustingLexerATNSimulator)super.interpreter;
+ PositionAdjustingLexerAtnSimulator interpreter {
+	return (PositionAdjustingLexerAtnSimulator)super.interpreter;
 }
 
-private static boolean isIdentifierChar(char c) {
+static bool isIdentifierChar(char c) {
 	return Character.isLetterOrDigit(c) || c == '_';
 }
 
- class PositionAdjustingLexerATNSimulator extends LexerATNSimulator {
+ class PositionAdjustingLexerAtnSimulator extends LexerAtnSimulator {
 
-	 PositionAdjustingLexerATNSimulator(Lexer recog, ATN atn,
-											  DFA[] decisionToDFA,
+	 PositionAdjustingLexerAtnSimulator(Lexer recog, Atn atn,
+											  List<Dfa> decisionToDfa,
 											  PredictionContextCache sharedContextCache)
 	{
-		super(recog, atn, decisionToDFA, sharedContextCache);
+		super(recog, atn, decisionToDfa, sharedContextCache);
 	}
 
 	 void resetAcceptPosition(CharStream input, int index, int line, int charPositionInLine) {
@@ -273,7 +273,7 @@ Declare_foo() ::= <<
 
 Invoke_foo() ::= "foo();"
 
-Declare_pred() ::= <<boolean pred(boolean v) {
+Declare_pred() ::= <<bool pred(bool v) {
 	print("eval="+v);
 	return v;
 }
