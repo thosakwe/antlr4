@@ -1475,14 +1475,18 @@ class LexerAtnSimulator extends AtnSimulator {
         target = _computeTargetState(input, state, token);
       }
       if (target == AtnSimulator.ERROR) break;
-      if (target.isAcceptState) {
-        _captureSimState(_prevAccept, input, target);
-        if (token == Token.EOF) break;
-      }
+
       if (token != Token.EOF) {
         consume(input);
         token = input.lookAhead(1);
       }
+
+      if (target.isAcceptState) {
+        _captureSimState(_prevAccept, input, target);
+        if (token == Token.EOF) break;
+      }
+
+      token = input.lookAhead(1); // TODO: Not originally present in Dart target... Should this be removed?
       state = target; // flip; current DFA target becomes new src/from state
     }
     return _failOrAccept(_prevAccept, input, state.configs, token);
